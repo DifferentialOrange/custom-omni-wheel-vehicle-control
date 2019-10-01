@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "DOPRI8_symmetrical.h"
 #include "include.h"
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -9,6 +8,18 @@ MainWindow::MainWindow(QWidget *parent) :
     plotted(false)
 {
     ui->setupUi(this);
+
+    ui->lineEdit_nu_1_0->setText("0");
+    ui->lineEdit_nu_2_0->setText("0");
+    ui->lineEdit_nu_3_0->setText("0");
+    ui->lineEdit_nu_1_T->setText("0");
+    ui->lineEdit_nu_2_T->setText("0");
+    ui->lineEdit_nu_3_T->setText("0");
+    ui->lineEdit_x_T->setText("10");
+    ui->lineEdit_y_T->setText("10");
+    ui->lineEdit_theta_T->setText("0");
+    ui->lineEdit_t_sw->setText("5");
+    ui->lineEdit_T->setText("10");
 }
 
 MainWindow::~MainWindow()
@@ -73,6 +84,14 @@ void MainWindow::on_pushButton_compute_clicked()
 
     if (plotted)
     {
+        t_symm.clear();
+        nu_1_symm.clear();
+        nu_2_symm.clear();
+        nu_3_symm.clear();
+        x_symm.clear();
+        y_symm.clear();
+        theta_symm.clear();
+
         t.clear();
         nu_1.clear();
         nu_2.clear();
@@ -85,36 +104,64 @@ void MainWindow::on_pushButton_compute_clicked()
     Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
             initial_values[1], final_values[1], initial_values[2], final_values[2],
             final_values[3], final_values[4], final_values[5]);
-    u_minus[0] = control[0];
-    u_minus[1] = control[1];
-    u_minus[2] = control[2];
-    u_plus[0] = control[3];
-    u_plus[1] = control[4];
-    u_plus[2] = control[5];
 
-    DOPRI8<6, 3> (0, T, initial_values, u_minus, u_plus, t_sw, t, nu_1, nu_2, nu_3, x, y, theta);
+    Vector<6> u_symm = control;
+
+    DOPRI8_symmetrical_plot (0, T, initial_values, {control[0], control[1], control[2]},
+                             {control[3], control[4], control[5]}, t_sw,
+                             t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
+                             x_symm, y_symm, theta_symm);
+
+    control = custom_control_find(control, t_sw, T, initial_values, final_values);
+
+    DOPRI8_final_plot (0, T, initial_values, {control[0], control[1], control[2]},
+                        {control[3], control[4], control[5]},
+                        t_sw, t, nu_1, nu_2, nu_3, x, y, theta);
 
     if (plotted)
+    {
         ui->PlotWidget_trajectory->clearPlottables();
+    }
 
-    Vector<3> W_minus = W_control(u_minus);
-    Vector<3> W_plus = W_control(u_plus);
-    ui->textBrowser_controls->setText(QString::number(W_minus[0]) + " " + QString::number(W_minus[1]) + " " +
-                                        QString::number(W_minus[2]) + " " + QString::number(W_plus[0]) + " " +
-                                        QString::number(W_plus[1]) + " " + QString::number(W_plus[2]));
 
-    QCPCurve *trajectory_minus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    QCPCurve *trajectory_plus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
+    ui->textBrowser_controls->setText("U_symm = " + QString::number(u_symm[0], 'g', 6)
+            + " " + QString::number(u_symm[1], 'g', 6) + " " + QString::number(u_symm[2], 'g', 6)
+            + " " + QString::number(u_symm[3], 'g', 6) + " " + QString::number(u_symm[4], 'g', 6)
+            + " " + QString::number(u_symm[5], 'g', 6) + '\n'
+            + "U_final   = " + QString::number(control[0], 'g', 6)
+            + " " + QString::number(control[1], 'g', 6) + " " + QString::number(control[2], 'g', 6)
+            + " " + QString::number(control[3], 'g', 6) + " " + QString::number(control[4], 'g', 6)
+            + " " + QString::number(control[5], 'g', 6));
 
-    QVector<QCPCurveData> data_minus, data_plus;
+    trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
+    trajectory_plus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
+    trajectory_minus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
+    trajectory_plus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
 
-    QPen pen_minus(Qt::DashLine);
-    pen_minus.setColor(Qt::blue);
+    QVector<QCPCurveData> data_minus, data_plus, data_minus_symm, data_plus_symm;
+
+    QPen pen_minus_symm(Qt::DashLine);
+    pen_minus_symm.setColor(Qt::gray);
+    QPen pen_plus_symm(Qt::DashLine);
+    pen_plus_symm.setColor(Qt::yellow);
+    trajectory_minus_symm->setPen(pen_minus_symm);
+    trajectory_plus_symm->setPen(pen_plus_symm);
+
+    QPen pen_minus(Qt::blue);
     QPen pen_plus(Qt::magenta);
     trajectory_minus->setPen(pen_minus);
     trajectory_plus->setPen(pen_plus);
 
     int i = 0;
+    for (i = 0; t_symm[i] < t_sw; i++)
+        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+
+    for (; i < x_symm.length(); i++)
+        data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+
+    trajectory_minus_symm->data()->set(data_minus_symm, true);
+    trajectory_plus_symm->data()->set(data_plus_symm, true);
+
     for (i = 0; t[i] < t_sw; i++)
         data_minus.append(QCPCurveData(i, x[i], y[i]));
 
@@ -124,18 +171,30 @@ void MainWindow::on_pushButton_compute_clicked()
     trajectory_minus->data()->set(data_minus, true);
     trajectory_plus->data()->set(data_plus, true);
 
-    double x_max = *std::max_element(x.begin(), x.end());
-    double x_min = *std::min_element(x.begin(), x.end());
-    double y_max = *std::max_element(y.begin(), y.end());
-    double y_min = *std::min_element(y.begin(), y.end());
+    double x_max_1 = *std::max_element(x_symm.begin(), x_symm.end());
+    double x_min_1 = *std::min_element(x_symm.begin(), x_symm.end());
+    double y_max_1 = *std::max_element(y_symm.begin(), y_symm.end());
+    double y_min_1 = *std::min_element(y_symm.begin(), y_symm.end());
+
+    double x_max_2 = *std::max_element(x.begin(), x.end());
+    double x_min_2 = *std::min_element(x.begin(), x.end());
+    double y_max_2 = *std::max_element(y.begin(), y.end());
+    double y_min_2 = *std::min_element(y.begin(), y.end());
+
+    double x_max = std::max(x_max_1, x_max_2);
+    double x_min = std::min(x_min_1, x_min_2);
+    double y_max = std::max(y_max_1, y_max_2);
+    double y_min = std::min(y_min_1, y_min_2);
 
     ui->PlotWidget_trajectory->xAxis->setRange(x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.05);
     ui->PlotWidget_trajectory->yAxis->setRange(y_min - (y_max - y_min) * 0.05, y_max + (y_max - y_min) * 0.05);
+    ui->PlotWidget_trajectory->xAxis->setLabel("x");
+    ui->PlotWidget_trajectory->yAxis->setLabel("y");
 
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePng("../VehicleControlPredict_Symmetrical/PICS/trajectory_t_sw_"
+    ui->PlotWidget_trajectory->savePdf("../Custom_Omnivehicle_Control_Predict/PICS/trajectory_t_sw_"
                                 + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
                                 + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
                                 + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
@@ -146,7 +205,7 @@ void MainWindow::on_pushButton_compute_clicked()
                                 + "_x_T_" + QString::number(final_values[3], 'g', 4)
                                 + "_y_T_" + QString::number(final_values[4], 'g', 4)
                                 + "_theta_T_" + QString::number(final_values[5], 'g', 4)
-                                + ".png");
+                                + ".pdf");
 
     plotted = true;
 }

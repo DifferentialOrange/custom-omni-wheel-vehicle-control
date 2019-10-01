@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include "vector.h"
+#include "qcustomplot.h"
 
 namespace Ui
 {
@@ -26,6 +27,14 @@ private slots:
 private:
     Ui::MainWindow *ui;
 
+    QVector<double> t_symm;
+    QVector<double> nu_1_symm;
+    QVector<double> nu_2_symm;
+    QVector<double> nu_3_symm;
+    QVector<double> x_symm;
+    QVector<double> y_symm;
+    QVector<double> theta_symm;
+
     QVector<double> t;
     QVector<double> nu_1;
     QVector<double> nu_2;
@@ -36,9 +45,12 @@ private:
 
     Vector<6> initial_values, final_values;
     double t_sw, T;
-    Vector<3> u_minus, u_plus;
 
     bool plotted;
+    QCPCurve *trajectory_minus_symm;
+    QCPCurve *trajectory_plus_symm;
+    QCPCurve *trajectory_minus;
+    QCPCurve *trajectory_plus;
 };
 
 #endif // MAINWINDOW_H

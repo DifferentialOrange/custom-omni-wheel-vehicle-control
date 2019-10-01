@@ -1,0 +1,3 @@
+This project require *qcustomplot.cpp* and *qcustomplot.h* for compilation. They could be obtained [here](http://www.qcustomplot.com/index.php/download).
+
+This app plots the trajectory of symmetrical vehicle with three omni-wheels (model could be seen in */DOCS*), which moves from origin point (course level also equals zero) with arbitrary initial speeds to arbitrary final point with arbitrary final course level and arbitrary final speeds using piecewise-constant control with one switch point (there are no any restrictions on their value), using the time of switch and time of movement as parameters. Existence of the unambiguous solution in regular case still hasn't been fully analytically proven yet.

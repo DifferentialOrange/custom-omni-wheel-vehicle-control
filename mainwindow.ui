@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>863</width>
-    <height>480</height>
+    <height>474</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -32,6 +32,9 @@
       <width>113</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -69,6 +72,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="text">
+     <string>0</string>
+    </property>
    </widget>
    <widget class="QLabel" name="label_3">
     <property name="geometry">
@@ -91,6 +97,9 @@
       <width>113</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -115,6 +124,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="text">
+     <string>0</string>
+    </property>
    </widget>
    <widget class="QLabel" name="label_5">
     <property name="geometry">
@@ -138,6 +150,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="text">
+     <string>0</string>
+    </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_nu_3_T">
     <property name="geometry">
@@ -147,6 +162,9 @@
       <width>113</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_6">
@@ -184,6 +202,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="text">
+     <string>10</string>
+    </property>
    </widget>
    <widget class="QLabel" name="label_8">
     <property name="geometry">
@@ -207,6 +228,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="text">
+     <string>10</string>
+    </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_theta_T">
     <property name="geometry">
@@ -216,6 +240,9 @@
       <width>113</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_9">
@@ -253,6 +280,9 @@
       <height>25</height>
      </rect>
     </property>
+    <property name="text">
+     <string>5</string>
+    </property>
    </widget>
    <widget class="QLabel" name="label_11">
     <property name="geometry">
@@ -275,6 +305,9 @@
       <width>113</width>
       <height>25</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>10</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_compute">
@@ -308,7 +341,7 @@
      <rect>
       <x>10</x>
       <y>350</y>
-      <width>431</width>
+      <width>541</width>
       <height>51</height>
      </rect>
     </property>
