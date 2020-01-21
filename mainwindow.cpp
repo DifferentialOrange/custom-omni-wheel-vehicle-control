@@ -194,7 +194,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../Custom_Omnivehicle_Control_Predict/PICS/trajectory_t_sw_"
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_t_sw_"
                                 + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
                                 + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
                                 + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
