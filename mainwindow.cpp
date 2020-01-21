@@ -138,15 +138,15 @@ void MainWindow::on_pushButton_compute_clicked()
 
     QVector<QCPCurveData> data_minus, data_plus, data_minus_err, data_plus_err;
 
-    QPen pen_minus(Qt::DashLine);
-    pen_minus.setColor(Qt::gray);
-    QPen pen_plus(Qt::DashLine);
-    pen_plus.setColor(Qt::yellow);
+    QPen pen_minus(Qt::gray);
+    QPen pen_plus(Qt::yellow);
     trajectory_minus->setPen(pen_minus);
     trajectory_plus->setPen(pen_plus);
 
-    QPen pen_minus_err(Qt::darkRed);
-    QPen pen_plus_err(Qt::darkCyan);
+    QPen pen_minus_err(Qt::DashLine);
+    pen_minus_err.setColor(Qt::darkRed);
+    QPen pen_plus_err(Qt::DashLine);
+    pen_minus_err.setColor(Qt::darkCyan);
     trajectory_minus_err->setPen(pen_minus_err);
     trajectory_plus_err->setPen(pen_plus_err);
 
