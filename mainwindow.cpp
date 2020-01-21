@@ -114,7 +114,15 @@ void MainWindow::on_pushButton_compute_clicked()
     std::random_device rd{};
     std::mt19937 gen{rd()};
     std::normal_distribution<> d{0, 1};
-    std::function<Vector<3>()> error_function = [&]() {return Vector<3>({d(gen), d(gen), d(gen)});};
+    std::function<Vector<3>()> error_function = [&]() {
+        static int count = 0;
+        count += 1;
+
+        if (count % 100 == 0)
+            return Vector<3>({d(gen), d(gen), d(gen)});
+        else
+            return Vector<3>({0, 0, 0});
+    };
 
     DOPRI8_final_plot (0, T, initial_values, {control[0], control[1], control[2]},
                         {control[3], control[4], control[5]},
