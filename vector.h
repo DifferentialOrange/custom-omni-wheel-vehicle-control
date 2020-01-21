@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <cmath>
 #include <cstdlib>
+#include <memory>
 #include <assert.h>
 #include <ostream>
 
@@ -43,6 +44,20 @@ public:
     {
         for (size_t i = 0; i < size; i++)
             dataArray[i] *= b; 
+        return (*this);
+    }
+
+    Vector(const Vector& b)
+    {
+        for (size_t i = 0; i < size; i++)
+            dataArray[i] = b.dataArray[i];
+    }
+
+    Vector& operator= (const Vector& b)
+    {
+        for (size_t i = 0; i < size; i++)
+            dataArray[i] = b.dataArray[i];
+
         return (*this);
     }
 
