@@ -54,4 +54,4 @@ DISTFILES +=
 SUBDIRS += \
     VehicleControlPredict_Symmetrical.pro
 
-LIBS += -L/usr/include/gsl -lgsl -lgslcblas -lm
+LIBS += -L/usr/local/lib -lgsl -lgslcblas -lm
