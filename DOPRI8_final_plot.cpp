@@ -44,10 +44,10 @@ Vector<6> rightpart_final(double t, Vector<6> x, Vector<3> control_minus, Vector
 }
 
 Vector<6> DOPRI8_final_plot(double t_left, double t_right, Vector<6> initial_values,
-                    Vector<3> control_minus, Vector<3> control_plus, double t_sw,
+                    Vector<3> control_minus_expected, Vector<3> control_plus_expected, double t_sw,
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
-                    QVector<double> &theta_vec)
+                    QVector<double> &theta_vec, std::function<Vector<3>()> error_function=nullptr)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
@@ -73,9 +73,15 @@ Vector<6> DOPRI8_final_plot(double t_left, double t_right, Vector<6> initial_val
     y_vec.append(xl[4]);
     theta_vec.append(xl[5]);
 
+    Vector<3> control_minus = control_minus_expected;
+    Vector<3> control_plus = control_plus_expected ;
 
     while (tl + h < t_right || last_flag)
     {
+        if (error_function != nullptr) {
+            control_minus = control_minus_expected + error_function();
+            control_plus = control_plus_expected + error_function();
+        }
 
         //switch point
         if (tl < t_sw && tl + h > t_sw && !switch_flag)

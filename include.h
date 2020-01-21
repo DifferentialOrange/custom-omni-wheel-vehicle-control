@@ -45,4 +45,4 @@ Vector<6> DOPRI8_final_plot(double t_left, double t_right, Vector<6> initial_val
                     Vector<3> control_minus, Vector<3> control_plus, double t_sw,
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
-                    QVector<double> &theta_vec);
+                    QVector<double> &theta_vec, std::function<Vector<3>()> error_function=nullptr);
