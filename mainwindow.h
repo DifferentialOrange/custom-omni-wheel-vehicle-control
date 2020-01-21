@@ -18,22 +18,12 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-
-
 private slots:
     void on_pushButton_compute_clicked();
     void on_pushButton_generate_clicked();
 
 private:
     Ui::MainWindow *ui;
-
-    QVector<double> t_symm;
-    QVector<double> nu_1_symm;
-    QVector<double> nu_2_symm;
-    QVector<double> nu_3_symm;
-    QVector<double> x_symm;
-    QVector<double> y_symm;
-    QVector<double> theta_symm;
 
     QVector<double> t;
     QVector<double> nu_1;
@@ -43,14 +33,23 @@ private:
     QVector<double> y;
     QVector<double> theta;
 
+    QVector<double> t_err;
+    QVector<double> nu_1_err;
+    QVector<double> nu_2_err;
+    QVector<double> nu_3_err;
+    QVector<double> x_err;
+    QVector<double> y_err;
+    QVector<double> theta_err;
+
     Vector<6> initial_values, final_values;
     double t_sw, T;
 
     bool plotted;
-    QCPCurve *trajectory_minus_symm;
-    QCPCurve *trajectory_plus_symm;
+
     QCPCurve *trajectory_minus;
     QCPCurve *trajectory_plus;
+    QCPCurve *trajectory_minus_err;
+    QCPCurve *trajectory_plus_err;
 };
 
 #endif // MAINWINDOW_H

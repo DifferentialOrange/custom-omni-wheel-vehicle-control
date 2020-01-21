@@ -7,6 +7,8 @@
 #include <random>
 #include <algorithm>
 #include <QVector>
+#include <iomanip>
+#include <random>
 
 #include <gsl/gsl_linalg.h>
 
