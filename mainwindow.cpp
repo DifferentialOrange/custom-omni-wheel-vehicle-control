@@ -35,8 +35,8 @@ static double energy(Vector<6> control, double t_sw, double T)
 
 void MainWindow::on_pushButton_compute_clicked()
 {
-    std::ofstream energy_0("energy_0_big.dat");
-    std::ofstream energy_turn("energy_turn_big.dat");
+    std::ofstream energy_0("energy_0.dat");
+    std::ofstream energy_turn("energy_turn.dat");
 
     initial_values[0] = 0;
     initial_values[1] = 0;
@@ -48,53 +48,53 @@ void MainWindow::on_pushButton_compute_clicked()
     final_values[1] = 0;
     final_values[2] = 0;
 
+    double t_sw = 0.5;
     double T = 1;
 
-    for (final_values[3] = -10; final_values[3] < 10.1; final_values[3] += 1)
-         for (final_values[4] = -10; final_values[4] < 10.1; final_values[4] += 1)
+    for (final_values[3] = -10; final_values[3] < 10.001; final_values[3] += 0.1)
+         for (final_values[4] = -10; final_values[4] < 10.001; final_values[4] += 0.1)
          {
              double en_0_min = 1e30;
-             double t_sw_0 = 0;
+//             double t_sw_0 = 0;
              double en_turn_min = 1e30;
-             double t_sw_turn = 0;
+//             double t_sw_turn = 0;
 
              final_values[5] = 0;
 
-             for (double t_sw = T / 20; t_sw < (T * 99 / 100); t_sw += T / 20)
+//             for (double t_sw = T / 20; t_sw < (T * 99 / 100); t_sw += T / 20)
              {
                  auto control = predict_control(t_sw, T, initial_values[0], final_values[0], initial_values[1], final_values[1],
                          initial_values[2], final_values[2], final_values[3], final_values[4], final_values[5]);
 
-                 auto value = energy(control, t_sw, T);
+                 en_0_min = energy(control, t_sw, T);
 
-                 if (en_0_min > value)
-                 {
-                     en_0_min = value;
-                     t_sw_0 = t_sw;
-                 }
+//                 if (en_0_min > value)
+//                 {
+//                     en_0_min = value;
+//                     t_sw_0 = t_sw;
+//                 }
              }
 
-             energy_0 << final_values[3] << " " << final_values[4] << " " << en_0_min << " " << t_sw_0 << std::endl;
+             energy_0 << final_values[3] << " " << final_values[4] << " " << en_0_min << std::endl;
 
              final_values[5] = atan2(final_values[4], final_values[3]);
 
-             for (double t_sw = T / 20; t_sw < (T * 99 / 100); t_sw += T / 20)
+//             for (double t_sw = T / 20; t_sw < (T * 99 / 100); t_sw += T / 20)
              {
                  auto control = predict_control(t_sw, T, initial_values[0], final_values[0], initial_values[1], final_values[1],
                          initial_values[2], final_values[2], final_values[3], final_values[4], final_values[5]);
 
-                 auto value = energy(control, t_sw, T);
+                 en_turn_min = energy(control, t_sw, T);
 
-                 if (en_turn_min > value)
-                 {
-                     en_turn_min = value;
-                     t_sw_turn = t_sw;
-                 }
+//                 if (en_turn_min > value)
+//                 {
+//                     en_turn_min = value;
+//                     t_sw_turn = t_sw;
+//                 }
              }
 
-             energy_turn << final_values[3] << " " << final_values[4] << " " << en_turn_min << " " << t_sw_0 << std::endl;
+             energy_turn << final_values[3] << " " << final_values[4] << " " << en_turn_min << std::endl;
 
-             qDebug() << "Finished (" << final_values[3] << ", " << final_values[4] << "), min on " <<
-                         t_sw_0 << " " << t_sw_turn << "\n";
+             qDebug() << "Finished (" << final_values[3] << ", " << final_values[4] << ")\n";
          }
 }
