@@ -77,7 +77,7 @@ void MainWindow::on_pushButton_compute_clicked()
 
              energy_0 << final_values[3] << " " << final_values[4] << " " << en_0_min << std::endl;
 
-             final_values[5] = atan2(final_values[4], final_values[3]);
+             final_values[5] = M_PI / 2 - atan2(final_values[4], final_values[3]);
 
 //             for (double t_sw = T / 20; t_sw < (T * 99 / 100); t_sw += T / 20)
              {
