@@ -59,14 +59,14 @@ void MainWindow::on_pushButton_compute_clicked()
              double en_turn_min = 1e30;
 //             double t_sw_turn = 0;
 
-             final_values[5] = 0;
+//             final_values[5] = 0;
 
 //             for (double t_sw = T / 20; t_sw < (T * 99 / 100); t_sw += T / 20)
              {
-                 auto control = predict_control(t_sw, T, initial_values[0], final_values[0], initial_values[1], final_values[1],
-                         initial_values[2], final_values[2], final_values[3], final_values[4], final_values[5]);
+//                 auto control = predict_control(t_sw, T, initial_values[0], final_values[0], initial_values[1], final_values[1],
+//                         initial_values[2], final_values[2], final_values[3], final_values[4], final_values[5]);
 
-                 en_0_min = energy(control, t_sw, T);
+//                 en_0_min = energy(control, t_sw, T);
 
 //                 if (en_0_min > value)
 //                 {
@@ -75,9 +75,9 @@ void MainWindow::on_pushButton_compute_clicked()
 //                 }
              }
 
-             energy_0 << final_values[3] << " " << final_values[4] << " " << en_0_min << std::endl;
+//             energy_0 << final_values[3] << " " << final_values[4] << " " << en_0_min << std::endl;
 
-             final_values[5] = M_PI / 2 - atan2(final_values[4], final_values[3]);
+             final_values[5] = atan2(-final_values[3], final_values[4]);
 
 //             for (double t_sw = T / 20; t_sw < (T * 99 / 100); t_sw += T / 20)
              {
@@ -95,6 +95,6 @@ void MainWindow::on_pushButton_compute_clicked()
 
              energy_turn << final_values[3] << " " << final_values[4] << " " << en_turn_min << std::endl;
 
-             qDebug() << "Finished (" << final_values[3] << ", " << final_values[4] << ")\n";
+             qDebug() << "Finished (" << final_values[3] << ", " << final_values[4] << "), theta " << final_values[5] << "\n";
          }
 }
