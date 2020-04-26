@@ -93,62 +93,35 @@ void MainWindow::on_pushButton_compute_clicked()
         theta_symm.clear();
     }
 
-    Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
-            initial_values[1], final_values[1], initial_values[2], final_values[2],
-            final_values[3], final_values[4], final_values[5]);
 
-    Vector<6> u_symm = control;
-
-    DOPRI8_symmetrical_plot (0, T, initial_values, {control[0], control[1], control[2]},
-                             {control[3], control[4], control[5]}, t_sw,
-                             t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
-                             x_symm, y_symm, theta_symm);
     if (plotted)
     {
         ui->PlotWidget_trajectory->clearPlottables();
     }
 
-
-    ui->textBrowser_controls->setText("U_symm = " + QString::number(u_symm[0], 'g', 6)
-            + " " + QString::number(u_symm[1], 'g', 6) + " " + QString::number(u_symm[2], 'g', 6)
-            + " " + QString::number(u_symm[3], 'g', 6) + " " + QString::number(u_symm[4], 'g', 6)
-            + " " + QString::number(u_symm[5], 'g', 6));
-
-    trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    trajectory_plus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-
-    QVector<QCPCurveData> data_minus, data_plus, data_minus_symm, data_plus_symm;
-
-    QPen pen_minus_symm(Qt::blue);
-    QPen pen_plus_symm(Qt::magenta);
-    trajectory_minus_symm->setPen(pen_minus_symm);
-    trajectory_plus_symm->setPen(pen_plus_symm);
+    QVector<double> tv, detv;
 
     int i = 0;
-    for (i = 0; t_symm[i] < t_sw; i++)
-        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+    for (double t_sw = 0.01; t_sw < T - 0.01; t_sw += 0.1, ++i){
+        double det = second_system_det(t_sw, T, initial_values[0], final_values[0],
+                initial_values[1], final_values[1], initial_values[2], final_values[2],
+                final_values[3], final_values[4], final_values[5]);
+        qDebug() << t_sw << '\n';
+        tv.append(t_sw);
+        detv.append(det);
+    }
 
-    for (; i < x_symm.length(); i++)
-        data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+    ui->PlotWidget_trajectory->addGraph();
+    ui->PlotWidget_trajectory->graph(0)->setData(tv, detv);
 
-    trajectory_minus_symm->data()->set(data_minus_symm, true);
-    trajectory_plus_symm->data()->set(data_plus_symm, true);
-
-
-    double x_max = *std::max_element(x_symm.begin(), x_symm.end());
-    double x_min = *std::min_element(x_symm.begin(), x_symm.end());
-    double y_max = *std::max_element(y_symm.begin(), y_symm.end());
-    double y_min = *std::min_element(y_symm.begin(), y_symm.end());
-
-    ui->PlotWidget_trajectory->xAxis->setRange(x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.05);
-    ui->PlotWidget_trajectory->yAxis->setRange(y_min - (y_max - y_min) * 0.05, y_max + (y_max - y_min) * 0.05);
-    ui->PlotWidget_trajectory->xAxis->setLabel("x");
-    ui->PlotWidget_trajectory->yAxis->setLabel("y");
+    ui->PlotWidget_trajectory->xAxis->setLabel("t_sw");
+    ui->PlotWidget_trajectory->yAxis->setLabel("det");
+    ui->PlotWidget_trajectory->rescaleAxes();
 
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_t_sw_"
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/det_"
                                 + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
                                 + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
                                 + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)

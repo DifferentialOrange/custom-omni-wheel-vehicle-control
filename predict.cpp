@@ -1,7 +1,7 @@
 #include "include.h"
 #include <gsl/gsl_linalg.h>
 
-Vector<6> predict_control(double t_sw, double T, double nu_1_0, double nu_1_T, double nu_2_0, double nu_2_T, double nu_3_0, double nu_3_T, 
+double second_system_det(double t_sw, double T, double nu_1_0, double nu_1_T, double nu_2_0, double nu_2_T, double nu_3_0, double nu_3_T,
                             double x_T, double y_T, double theta_T)
 {
 
@@ -54,21 +54,12 @@ Vector<6> predict_control(double t_sw, double T, double nu_1_0, double nu_1_T, d
 
     gsl_permutation* p_second = gsl_permutation_alloc(8);
     gsl_linalg_LU_decomp(&A_second.matrix, p_second, &s);
-    gsl_linalg_LU_solve(&A_second.matrix, p_second, &b_second.vector, x_second);
-
-    double W_1_minus    = x_second->data[1];
-    double W_1_plus     = x_second->data[2];
-    double W_2_minus    = x_second->data[4];
-    double W_2_plus     = x_second->data[5];
-
-
-    Vector<6> control = {u_control_1(W_1_minus, W_2_minus, W_3_minus), u_control_2(W_1_minus, W_2_minus, W_3_minus), u_control_3(W_1_minus, W_2_minus, W_3_minus), 
-                        u_control_1(W_1_plus, W_2_plus, W_3_plus), u_control_2(W_1_plus, W_2_plus, W_3_plus), u_control_3(W_1_plus, W_2_plus, W_3_plus)};
+    double det = gsl_linalg_LU_det(&A_second.matrix, s);
 
     gsl_permutation_free(p_first);
     gsl_permutation_free(p_second);
     gsl_vector_free(x_first);
     gsl_vector_free(x_second);
 
-    return control;
+    return det;
 }
