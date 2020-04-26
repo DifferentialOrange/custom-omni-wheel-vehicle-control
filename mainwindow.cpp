@@ -114,6 +114,10 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->addGraph();
     ui->PlotWidget_trajectory->graph(0)->setData(tv, detv);
 
+    QPen pen(Qt::blue);
+    pen.setWidth(3);
+    ui->PlotWidget_trajectory->graph(0)->setPen(pen);
+
     ui->PlotWidget_trajectory->xAxis->setLabel("t_sw");
     ui->PlotWidget_trajectory->yAxis->setLabel("det");
     ui->PlotWidget_trajectory->rescaleAxes();
