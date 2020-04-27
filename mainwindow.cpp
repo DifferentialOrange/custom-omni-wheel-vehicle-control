@@ -118,8 +118,8 @@ void MainWindow::on_pushButton_compute_clicked()
     pen.setWidth(3);
     ui->PlotWidget_trajectory->graph(0)->setPen(pen);
 
-    ui->PlotWidget_trajectory->xAxis->setLabel("t_sw");
-    ui->PlotWidget_trajectory->yAxis->setLabel("det");
+//    ui->PlotWidget_trajectory->xAxis->setLabel("t_sw");
+//    ui->PlotWidget_trajectory->yAxis->setLabel("det");
     ui->PlotWidget_trajectory->rescaleAxes();
 
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
