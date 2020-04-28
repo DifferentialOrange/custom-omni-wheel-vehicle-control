@@ -99,20 +99,22 @@ void MainWindow::on_pushButton_compute_clicked()
         ui->PlotWidget_trajectory->clearPlottables();
     }
 
-    QVector<double> tv, detv;
+    QVector<double> tv, data;
 
     int i = 0;
-    for (double t_sw = 0.01; t_sw < T - 0.01; t_sw += 0.1, ++i){
-        double det = second_system_det(t_sw, T, initial_values[0], final_values[0],
-                initial_values[1], final_values[1], initial_values[2], final_values[2],
-                final_values[3], final_values[4], final_values[5]);
+    for (double t_sw = 0.01; t_sw < T - 0.01; t_sw += 0.001, ++i){
+        double varkappa = parameters::symmetrical::kappa;
+        double g_varkappa = ((exp(t_sw * varkappa) - exp(T * varkappa)) * (exp(t_sw * varkappa) - exp(T * varkappa)) * t_sw + \
+                             (exp(t_sw * varkappa) - 1) * (exp(t_sw * varkappa) - 1) * (T - t_sw)) / \
+                            (t_sw - t_sw * exp(varkappa * T) - T + exp(varkappa * t_sw)) / \
+                             (t_sw - t_sw * exp(varkappa * T) - T + exp(varkappa * t_sw));
         qDebug() << t_sw << '\n';
         tv.append(t_sw);
-        detv.append(det);
+        data.append(g_varkappa);
     }
 
     ui->PlotWidget_trajectory->addGraph();
-    ui->PlotWidget_trajectory->graph(0)->setData(tv, detv);
+    ui->PlotWidget_trajectory->graph(0)->setData(tv, data);
 
     QPen pen(Qt::blue);
     pen.setWidth(3);
@@ -125,18 +127,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/det_"
-                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
-                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
-                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
-                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
-                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
-                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
-                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
-                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
-                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
-                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
-                                + ".pdf");
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/function.pdf");
 
     plotted = true;
 }
