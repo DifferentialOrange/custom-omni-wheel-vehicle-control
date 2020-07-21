@@ -92,23 +92,23 @@ void MainWindow::on_pushButton_compute_clicked()
         double min_energy_trajectory_turn = 1e30;
         for (double t_sw_turn = s / 10; t_sw_turn < s * 9 / 10; t_sw_turn += s / 10)
         {
-            Vector<6> control = predict_control(t_sw_turn, T, initial_values[0], final_values[0],
+            Vector<6> control = predict_control(t_sw_turn, s, initial_values[0], final_values[0],
                     initial_values[1], final_values[1], initial_values[2], final_values[2],
                     0, 0, final_values[5]);
 
             qDebug() << "Computed turn energy for t_sw = " << t_sw_turn << "\n";
-            min_energy_trajectory_turn = std::min(min_energy_dynamics, energy(control, t_sw_turn, T));
+            min_energy_trajectory_turn = std::min(min_energy_dynamics, energy(control, t_sw_turn, s));
         }
 
         double min_energy_trajectory_line = 1e30;
         for (double t_sw_line = (T - s) / 10; t_sw_line < (T - s) * 9 / 10; t_sw_line += (T - s) / 10)
         {
-            Vector<6> control = predict_control(t_sw_line, T, initial_values[0], final_values[0],
+            Vector<6> control = predict_control(t_sw_line, T - s, initial_values[0], final_values[0],
                     initial_values[1], final_values[1], initial_values[2], final_values[2],
                     final_values[3], final_values[4], 0);
 
             qDebug() << "Computed line movement energy for t_sw = " << t_sw_line << "\n";
-            min_energy_trajectory_line = std::min(min_energy_dynamics, energy(control, t_sw_line, T));
+            min_energy_trajectory_line = std::min(min_energy_dynamics, energy(control, t_sw_line, T - s));
         }
 
         qDebug() << "Computed energy for s = " << s << "\n";
