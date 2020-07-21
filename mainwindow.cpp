@@ -27,22 +27,21 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+static double energy(Vector<6> control, double t_sw, double T)
+{
+    return t_sw * (control[0] * control[0] + control[1] * control[1] + control[2] * control[2]) + \
+            (T - t_sw) * (control[3] * control[3] + control[4] * control[4] + control[5] * control[5]);
+}
 
 void MainWindow::on_pushButton_compute_clicked()
 {
     bool ok;
 
-    initial_values[0] = ui->lineEdit_nu_1_0->text().toDouble(&ok);
-    if (!ok)
-        return;
+    initial_values[0] = 0;
 
-    initial_values[1] = ui->lineEdit_nu_2_0->text().toDouble(&ok);
-    if (!ok)
-        return;
+    initial_values[1] = 0;
 
-    initial_values[2] = ui->lineEdit_nu_3_0->text().toDouble(&ok);
-    if (!ok)
-        return;
+    initial_values[2] = 0;
 
     initial_values[3] = 0;
 
@@ -50,17 +49,11 @@ void MainWindow::on_pushButton_compute_clicked()
 
     initial_values[5] = 0;
 
-    final_values[0] = ui->lineEdit_nu_1_T->text().toDouble(&ok);
-    if (!ok)
-        return;
+    final_values[0] = 0;
 
-    final_values[1] = ui->lineEdit_nu_2_T->text().toDouble(&ok);
-    if (!ok)
-        return;
+    final_values[1] = 0;
 
-    final_values[2] = ui->lineEdit_nu_3_T->text().toDouble(&ok);
-    if (!ok)
-        return;
+    final_values[2] = 0;
 
     final_values[3] = ui->lineEdit_x_T->text().toDouble(&ok);
     if (!ok)
@@ -74,134 +67,76 @@ void MainWindow::on_pushButton_compute_clicked()
     if (!ok)
         return;
 
-    t_sw = ui->lineEdit_t_sw->text().toDouble(&ok);
-    if (!ok || t_sw <= 0)
-        return;
-
     T = ui->lineEdit_T->text().toDouble(&ok);
-    if (!ok || T <= t_sw)
+    if (!ok)
         return;
 
-    if (plotted)
-    {
-        t_symm.clear();
-        nu_1_symm.clear();
-        nu_2_symm.clear();
-        nu_3_symm.clear();
-        x_symm.clear();
-        y_symm.clear();
-        theta_symm.clear();
+    double min_energy_dynamics = 1e30;
 
-        t.clear();
-        nu_1.clear();
-        nu_2.clear();
-        nu_3.clear();
-        x.clear();
-        y.clear();
-        theta.clear();
+    for (double t_sw = T / 1000; t_sw <= T * 999 / 1000; t_sw += T / 1000)
+    {
+        Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
+                initial_values[1], final_values[1], initial_values[2], final_values[2],
+                final_values[3], final_values[4], final_values[5]);
+
+        control = custom_control_find(control, t_sw, T, initial_values, final_values);
+
+        min_energy_dynamics = std::min(min_energy_dynamics, energy(control, t_sw, T));
     }
 
-    Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
-            initial_values[1], final_values[1], initial_values[2], final_values[2],
-            final_values[3], final_values[4], final_values[5]);
+    QVector<double> s_vect;
+    QVector<double> energy_trajectory;
+    QVector<double> energy_dynamics;
 
-    Vector<6> u_symm = control;
+    for (double s = T / 100; s <= T * 99 / 100; s += T / 100)
+    {
+        double min_energy_trajectory_turn = 1e30;
+        for (double t_sw_turn = s / 10; t_sw_turn < s * 9 / 10; t_sw_turn += s / 10)
+        {
+            Vector<6> control = predict_control(t_sw_turn, T, initial_values[0], final_values[0],
+                    initial_values[1], final_values[1], initial_values[2], final_values[2],
+                    0, 0, final_values[5]);
 
-    DOPRI8_symmetrical_plot (0, T, initial_values, {control[0], control[1], control[2]},
-                             {control[3], control[4], control[5]}, t_sw,
-                             t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
-                             x_symm, y_symm, theta_symm);
+            control = custom_control_find(control, t_sw_turn, T, initial_values, final_values);
 
-    control = custom_control_find(control, t_sw, T, initial_values, final_values);
+            min_energy_trajectory_turn = std::min(min_energy_dynamics, energy(control, t_sw_turn, T));
+        }
 
-    DOPRI8_final_plot (0, T, initial_values, {control[0], control[1], control[2]},
-                        {control[3], control[4], control[5]},
-                        t_sw, t, nu_1, nu_2, nu_3, x, y, theta);
+        double min_energy_trajectory_line = 1e30;
+        for (double t_sw_line = (T - s) / 10; t_sw_line < (T - s) * 9 / 10; t_sw_line += (T - s) / 10)
+        {
+            Vector<6> control = predict_control(t_sw_line, T, initial_values[0], final_values[0],
+                    initial_values[1], final_values[1], initial_values[2], final_values[2],
+                    final_values[3], final_values[4], 0);
+
+            control = custom_control_find(control, t_sw_line, T, initial_values, final_values);
+
+            min_energy_trajectory_line = std::min(min_energy_dynamics, energy(control, t_sw_line, T));
+        }
+
+        s_vect.push_back(s);
+        energy_trajectory.push_back(min_energy_trajectory_turn + min_energy_trajectory_line);
+        energy_dynamics.push_back(min_energy_dynamics);
+    }
 
     if (plotted)
     {
         ui->PlotWidget_trajectory->clearPlottables();
     }
 
+    ui->PlotWidget_trajectory->addGraph();
+    ui->PlotWidget_trajectory->graph(0)->setData(s_vect, energy_trajectory);
+    ui->PlotWidget_trajectory->addGraph();
+    ui->PlotWidget_trajectory->graph(1)->setData(s_vect, energy_dynamics);
 
-    ui->textBrowser_controls->setText("U_symm = " + QString::number(u_symm[0], 'g', 6)
-            + " " + QString::number(u_symm[1], 'g', 6) + " " + QString::number(u_symm[2], 'g', 6)
-            + " " + QString::number(u_symm[3], 'g', 6) + " " + QString::number(u_symm[4], 'g', 6)
-            + " " + QString::number(u_symm[5], 'g', 6) + '\n'
-            + "U_final   = " + QString::number(control[0], 'g', 6)
-            + " " + QString::number(control[1], 'g', 6) + " " + QString::number(control[2], 'g', 6)
-            + " " + QString::number(control[3], 'g', 6) + " " + QString::number(control[4], 'g', 6)
-            + " " + QString::number(control[5], 'g', 6));
-
-    trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    trajectory_plus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    trajectory_minus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    trajectory_plus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-
-    QVector<QCPCurveData> data_minus, data_plus, data_minus_symm, data_plus_symm;
-
-    QPen pen_minus_symm(Qt::DashLine);
-    pen_minus_symm.setColor(Qt::gray);
-    QPen pen_plus_symm(Qt::DashLine);
-    pen_plus_symm.setColor(Qt::yellow);
-    trajectory_minus_symm->setPen(pen_minus_symm);
-    trajectory_plus_symm->setPen(pen_plus_symm);
-
-    QPen pen_minus(Qt::blue);
-    QPen pen_plus(Qt::magenta);
-    trajectory_minus->setPen(pen_minus);
-    trajectory_plus->setPen(pen_plus);
-
-    int i = 0;
-    for (i = 0; t_symm[i] < t_sw; i++)
-        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
-
-    for (; i < x_symm.length(); i++)
-        data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
-
-    trajectory_minus_symm->data()->set(data_minus_symm, true);
-    trajectory_plus_symm->data()->set(data_plus_symm, true);
-
-    for (i = 0; t[i] < t_sw; i++)
-        data_minus.append(QCPCurveData(i, x[i], y[i]));
-
-    for (; i < x.length(); i++)
-        data_plus.append(QCPCurveData(i, x[i], y[i]));
-
-    trajectory_minus->data()->set(data_minus, true);
-    trajectory_plus->data()->set(data_plus, true);
-
-    double x_max_1 = *std::max_element(x_symm.begin(), x_symm.end());
-    double x_min_1 = *std::min_element(x_symm.begin(), x_symm.end());
-    double y_max_1 = *std::max_element(y_symm.begin(), y_symm.end());
-    double y_min_1 = *std::min_element(y_symm.begin(), y_symm.end());
-
-    double x_max_2 = *std::max_element(x.begin(), x.end());
-    double x_min_2 = *std::min_element(x.begin(), x.end());
-    double y_max_2 = *std::max_element(y.begin(), y.end());
-    double y_min_2 = *std::min_element(y.begin(), y.end());
-
-    double x_max = std::max(x_max_1, x_max_2);
-    double x_min = std::min(x_min_1, x_min_2);
-    double y_max = std::max(y_max_1, y_max_2);
-    double y_min = std::min(y_min_1, y_min_2);
-
-    ui->PlotWidget_trajectory->xAxis->setRange(x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.05);
-    ui->PlotWidget_trajectory->yAxis->setRange(y_min - (y_max - y_min) * 0.05, y_max + (y_max - y_min) * 0.05);
-    ui->PlotWidget_trajectory->xAxis->setLabel("x");
-    ui->PlotWidget_trajectory->yAxis->setLabel("y");
+    ui->PlotWidget_trajectory->xAxis->setLabel("s");
+    ui->PlotWidget_trajectory->yAxis->setLabel("E");
 
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_t_sw_"
-                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
-                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
-                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
-                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
-                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
-                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
-                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/energy_comparison_T_"
+                                + QString::number(T, 'g', 4)
                                 + "_x_T_" + QString::number(final_values[3], 'g', 4)
                                 + "_y_T_" + QString::number(final_values[4], 'g', 4)
                                 + "_theta_T_" + QString::number(final_values[5], 'g', 4)
