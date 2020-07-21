@@ -127,8 +127,8 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->addGraph();
     ui->PlotWidget_trajectory->graph(1)->setData(s_vect, energy_dynamics);
 
-    ui->PlotWidget_trajectory->graph(0)->rescaleAxes();
-    ui->PlotWidget_trajectory->graph(1)->rescaleAxes(true);
+    ui->PlotWidget_trajectory->graph(1)->rescaleAxes();
+    ui->PlotWidget_trajectory->graph(0)->rescaleAxes(true);
 
     ui->PlotWidget_trajectory->xAxis->setLabel("s");
     ui->PlotWidget_trajectory->yAxis->setLabel("E");
