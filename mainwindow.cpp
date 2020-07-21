@@ -97,7 +97,7 @@ void MainWindow::on_pushButton_compute_clicked()
                     0, 0, final_values[5]);
 
             qDebug() << "Computed turn energy for t_sw = " << t_sw_turn << "\n";
-            min_energy_trajectory_turn = std::min(min_energy_dynamics, energy(control, t_sw_turn, s));
+            min_energy_trajectory_turn = std::min(min_energy_trajectory_turn, energy(control, t_sw_turn, s));
         }
 
         double min_energy_trajectory_line = 1e30;
@@ -108,10 +108,10 @@ void MainWindow::on_pushButton_compute_clicked()
                     final_values[3], final_values[4], 0);
 
             qDebug() << "Computed line movement energy for t_sw = " << t_sw_line << "\n";
-            min_energy_trajectory_line = std::min(min_energy_dynamics, energy(control, t_sw_line, T - s));
+            min_energy_trajectory_line = std::min(min_energy_trajectory_line, energy(control, t_sw_line, T - s));
         }
 
-        qDebug() << "Computed energy for s = " << s << "\n";
+        qDebug() << "Computed energy for s = " << s << " is" << min_energy_trajectory_turn + min_energy_trajectory_line << "\n";
         s_vect.push_back(s);
         energy_trajectory.push_back(min_energy_trajectory_turn + min_energy_trajectory_line);
         energy_dynamics.push_back(min_energy_dynamics);
