@@ -79,8 +79,6 @@ void MainWindow::on_pushButton_compute_clicked()
                 initial_values[1], final_values[1], initial_values[2], final_values[2],
                 final_values[3], final_values[4], final_values[5]);
 
-        control = custom_control_find(control, t_sw, T, initial_values, final_values);
-
         min_energy_dynamics = std::min(min_energy_dynamics, energy(control, t_sw, T));
     }
 
@@ -97,8 +95,6 @@ void MainWindow::on_pushButton_compute_clicked()
                     initial_values[1], final_values[1], initial_values[2], final_values[2],
                     0, 0, final_values[5]);
 
-            control = custom_control_find(control, t_sw_turn, T, initial_values, final_values);
-
             min_energy_trajectory_turn = std::min(min_energy_dynamics, energy(control, t_sw_turn, T));
         }
 
@@ -108,8 +104,6 @@ void MainWindow::on_pushButton_compute_clicked()
             Vector<6> control = predict_control(t_sw_line, T, initial_values[0], final_values[0],
                     initial_values[1], final_values[1], initial_values[2], final_values[2],
                     final_values[3], final_values[4], 0);
-
-            control = custom_control_find(control, t_sw_line, T, initial_values, final_values);
 
             min_energy_trajectory_line = std::min(min_energy_dynamics, energy(control, t_sw_line, T));
         }
