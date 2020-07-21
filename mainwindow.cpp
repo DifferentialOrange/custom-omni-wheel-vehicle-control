@@ -90,7 +90,7 @@ void MainWindow::on_pushButton_compute_clicked()
     for (double s = T / 100; s <= T * 99 / 100; s += T / 100)
     {
         double min_energy_trajectory_turn = 1e30;
-        for (double t_sw_turn = s / 10; t_sw_turn < s * 9 / 10; t_sw_turn += s / 10)
+        for (double t_sw_turn = s / 10; t_sw_turn < s * 9 / 10; t_sw_turn += T / 1000)
         {
             Vector<6> control = predict_control(t_sw_turn, s, initial_values[0], final_values[0],
                     initial_values[1], final_values[1], initial_values[2], final_values[2],
@@ -101,7 +101,7 @@ void MainWindow::on_pushButton_compute_clicked()
         }
 
         double min_energy_trajectory_line = 1e30;
-        for (double t_sw_line = (T - s) / 10; t_sw_line < (T - s) * 9 / 10; t_sw_line += (T - s) / 10)
+        for (double t_sw_line = (T - s) / 10; t_sw_line < (T - s) * 9 / 10; t_sw_line += T / 1000)
         {
             Vector<6> control = predict_control(t_sw_line, T - s, initial_values[0], final_values[0],
                     initial_values[1], final_values[1], initial_values[2], final_values[2],
