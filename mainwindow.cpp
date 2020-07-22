@@ -124,10 +124,10 @@ void MainWindow::on_pushButton_compute_clicked()
 
     ui->PlotWidget_trajectory->addGraph();
     ui->PlotWidget_trajectory->graph(0)->setPen(QPen(Qt::green));
-    ui->PlotWidget_trajectory->graph(0)->setData(s_vect, energy_trajectory);
+    ui->PlotWidget_trajectory->graph(0)->setData(s_vect, energy_dynamics);
     ui->PlotWidget_trajectory->addGraph();
     ui->PlotWidget_trajectory->graph(1)->setPen(QPen(Qt::red));
-    ui->PlotWidget_trajectory->graph(1)->setData(s_vect, energy_dynamics);
+    ui->PlotWidget_trajectory->graph(1)->setData(s_vect, energy_trajectory);
 
     ui->PlotWidget_trajectory->graph(0)->rescaleAxes();
     ui->PlotWidget_trajectory->graph(1)->rescaleAxes(true);
