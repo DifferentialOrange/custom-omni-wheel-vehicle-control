@@ -72,11 +72,11 @@ void MainWindow::on_pushButton_compute_clicked()
         return;
 
     double min_energy_dynamics = 1e30;
+    double t_step = T / 100;
 
-    for (double t_sw = T / 1000; t_sw <= T * 999 / 1000; t_sw += T / 1000)
+    for (double t_sw = T / 1000; t_sw <= T * 999 / 1000; t_sw += t_step)
     {
-        Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
-                initial_values[1], final_values[1], initial_values[2], final_values[2],
+        Vector<6> control = predict_control(t_sw, T, 0, 0, 0, 0, 0, 0,
                 final_values[3], final_values[4], final_values[5]);
 
         qDebug() << "Computed dynamic strategy energy for t_sw = " << t_sw << "\n";
@@ -86,28 +86,27 @@ void MainWindow::on_pushButton_compute_clicked()
     QVector<double> s_vect;
     QVector<double> energy_trajectory;
     QVector<double> energy_dynamics;
+    double min_energy_two_step = 1e30;
 
     for (double s = T / 100; s <= T * 99 / 100; s += T / 100)
     {
         double min_energy_trajectory_turn = 1e30;
-        for (double t_sw_turn = s / 10; t_sw_turn < s * 9 / 10; t_sw_turn += T / 100)
+        for (double t_sw_turn = s / 10; t_sw_turn < s * 9 / 10; t_sw_turn += t_step)
         {
-            Vector<6> control = predict_control(t_sw_turn, s, initial_values[0], final_values[0],
-                    initial_values[1], final_values[1], initial_values[2], final_values[2],
+            Vector<6> control = predict_control(t_sw_turn, s, 0, 0, 0, 0, 0, 0,
                     0, 0, final_values[5]);
 
-            qDebug() << "Computed turn energy for t_sw = " << t_sw_turn << "\n";
+            qDebug() << "Computed turn energy for t_sw = " << t_sw_turn << ", T = " << s << "\n";
             min_energy_trajectory_turn = std::min(min_energy_trajectory_turn, energy(control, t_sw_turn, s));
         }
 
         double min_energy_trajectory_line = 1e30;
-        for (double t_sw_line = (T - s) / 10; t_sw_line < (T - s) * 9 / 10; t_sw_line += T / 100)
+        for (double t_sw_line = (T - s) / 10; t_sw_line < (T - s) * 9 / 10; t_sw_line += t_step)
         {
-            Vector<6> control = predict_control(t_sw_line, T - s, initial_values[0], final_values[0],
-                    initial_values[1], final_values[1], initial_values[2], final_values[2],
+            Vector<6> control = predict_control(t_sw_line, T - s, 0, 0, 0, 0, 0, 0,
                     final_values[3], final_values[4], 0);
 
-            qDebug() << "Computed line movement energy for t_sw = " << t_sw_line << "\n";
+            qDebug() << "Computed line movement energy for t_sw = " << t_sw_line << ", T = " << T - s << "\n";
             min_energy_trajectory_line = std::min(min_energy_trajectory_line, energy(control, t_sw_line, T - s));
         }
 
@@ -115,6 +114,7 @@ void MainWindow::on_pushButton_compute_clicked()
         s_vect.push_back(s);
         energy_trajectory.push_back(min_energy_trajectory_turn + min_energy_trajectory_line);
         energy_dynamics.push_back(min_energy_dynamics);
+        min_energy_two_step = std::min(min_energy_two_step, min_energy_trajectory_turn + min_energy_trajectory_line);
     }
 
     if (plotted)
@@ -137,6 +137,9 @@ void MainWindow::on_pushButton_compute_clicked()
 
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
+
+    ui->textBrowser_controls->setText("One-step is " + QString::number(min_energy_dynamics) +
+                                      "\nTwo-step is " + QString::number(min_energy_two_step));
 
     ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/energy_comparison_T_"
                                 + QString::number(T, 'g', 4)
