@@ -5,17 +5,19 @@
 
 // dot x, dot y, dot theta, dot chi 1, dot chi 2, dot chi 3, x, y, theta, chi 1, chi 2, chi 3
 
-double sign(double a)
+double f_sign(double a)
 {
-    if (a < 0)
+    if (fabs(a) < 1e-6)
+        return 0;
+    else if (a < 0)
         return -1;
     else
         return 1;
 }
 
-double v_m_i_perpend_sign(int i, double dot_x, double dot_y, double dot_theta, double dot_chi, double theta)
+double v_m_i_n_sign(int i, double dot_x, double dot_y, double dot_theta, double dot_chi, double theta)
 {
-    return sign(
+    return f_sign(
         dot_x * cos(theta + parameters::symmetrical::beta[i]) +
         dot_y * sin(theta + parameters::symmetrical::beta[i]) +
         dot_theta * (
@@ -26,9 +28,9 @@ double v_m_i_perpend_sign(int i, double dot_x, double dot_y, double dot_theta, d
     );
 }
 
-double v_m_i_parall_sign(int i, double dot_x, double dot_y, double dot_theta, double dot_chi, double theta)
+double v_m_i_tau_sign(int i, double dot_x, double dot_y, double dot_theta, double dot_chi, double theta)
 {
-    return sign(
+    return f_sign(
         - dot_x * sin(theta + parameters::symmetrical::beta[i]) +
         dot_y * cos(theta + parameters::symmetrical::beta[i]) +
         dot_theta * (
@@ -50,71 +52,71 @@ Vector<12> rightpart(double t, Vector<12> x, Vector<3> control_minus, Vector<3> 
     else
         u = control_plus;
 
-    std::array<double, 3> v_m_i_parall = {
-        v_m_i_parall_sign(0, x[0], x[1], x[2], x[3], x[8]),
-        v_m_i_parall_sign(1, x[0], x[1], x[2], x[4], x[8]),
-        v_m_i_parall_sign(2, x[0], x[1], x[2], x[5], x[8]),
+    std::array<double, 3> v_m_i_n = {
+        v_m_i_n_sign(0, x[0], x[1], x[2], x[3], x[8]),
+        v_m_i_n_sign(1, x[0], x[1], x[2], x[4], x[8]),
+        v_m_i_n_sign(2, x[0], x[1], x[2], x[5], x[8]),
     };
 
-    std::array<double, 3> v_m_i_perpend = {
-        v_m_i_perpend_sign(0, x[0], x[1], x[2], x[3], x[8]),
-        v_m_i_perpend_sign(1, x[0], x[1], x[2], x[4], x[8]),
-        v_m_i_perpend_sign(2, x[0], x[1], x[2], x[5], x[8]),
+    std::array<double, 3> v_m_i_tau = {
+        v_m_i_tau_sign(0, x[0], x[1], x[2], x[3], x[8]),
+        v_m_i_tau_sign(1, x[0], x[1], x[2], x[4], x[8]),
+        v_m_i_tau_sign(2, x[0], x[1], x[2], x[5], x[8]),
     };
 
     rez[0] =
-        - parameters::mu_parall * (
-            v_m_i_parall[0] * cos(x[8] + parameters::symmetrical::beta[0]) +
-            v_m_i_parall[1] * cos(x[8] + parameters::symmetrical::beta[1]) +
-            v_m_i_parall[2] * cos(x[8] + parameters::symmetrical::beta[2])
-        ) + parameters::mu_perpend * (
-            v_m_i_perpend[0] * sin(x[8] + parameters::symmetrical::beta[0]) +
-            v_m_i_perpend[1] * sin(x[8] + parameters::symmetrical::beta[1]) +
-            v_m_i_perpend[2] * sin(x[8] + parameters::symmetrical::beta[2])
+        - parameters::mu_n * (
+            v_m_i_n[0] * cos(x[8] + parameters::symmetrical::beta[0]) +
+            v_m_i_n[1] * cos(x[8] + parameters::symmetrical::beta[1]) +
+            v_m_i_n[2] * cos(x[8] + parameters::symmetrical::beta[2])
+        ) + parameters::mu_tau * (
+            v_m_i_tau[0] * sin(x[8] + parameters::symmetrical::beta[0]) +
+            v_m_i_tau[1] * sin(x[8] + parameters::symmetrical::beta[1]) +
+            v_m_i_tau[2] * sin(x[8] + parameters::symmetrical::beta[2])
         )
     ;
 
     rez[1] =
-        - parameters::mu_parall * (
-            v_m_i_parall[0] * sin(x[8] + parameters::symmetrical::beta[0]) +
-            v_m_i_parall[1] * sin(x[8] + parameters::symmetrical::beta[1]) +
-            v_m_i_parall[2] * sin(x[8] + parameters::symmetrical::beta[2])
-        ) - parameters::mu_perpend * (
-            v_m_i_perpend[0] * cos(x[8] + parameters::symmetrical::beta[0]) +
-            v_m_i_perpend[1] * cos(x[8] + parameters::symmetrical::beta[1]) +
-            v_m_i_perpend[2] * cos(x[8] + parameters::symmetrical::beta[2])
+        - parameters::mu_n * (
+            v_m_i_n[0] * sin(x[8] + parameters::symmetrical::beta[0]) +
+            v_m_i_n[1] * sin(x[8] + parameters::symmetrical::beta[1]) +
+            v_m_i_n[2] * sin(x[8] + parameters::symmetrical::beta[2])
+        ) - parameters::mu_tau * (
+            v_m_i_tau[0] * cos(x[8] + parameters::symmetrical::beta[0]) +
+            v_m_i_tau[1] * cos(x[8] + parameters::symmetrical::beta[1]) +
+            v_m_i_tau[2] * cos(x[8] + parameters::symmetrical::beta[2])
         )
     ;
 
     rez[2] = (
-        - parameters::mu_parall * (
-                v_m_i_parall[0] * (
+        - parameters::mu_tau * (
+                v_m_i_tau[0] * (
                     parameters::symmetrical::delta[0] *
                     cos(parameters::symmetrical::beta[0] - parameters::symmetrical::alpha[0]) -
                     parameters::symmetrical::Delta * sin(parameters::symmetrical::beta[0])
                 ) +
-                v_m_i_parall[1] * (
+                v_m_i_tau[1] * (
                     parameters::symmetrical::delta[1] *
                     cos(parameters::symmetrical::beta[1] - parameters::symmetrical::alpha[1]) -
                     parameters::symmetrical::Delta * sin(parameters::symmetrical::beta[1])
                 ) +
-                v_m_i_parall[2] * (
+                v_m_i_tau[2] * (
                     parameters::symmetrical::delta[2] *
                     cos(parameters::symmetrical::beta[2] - parameters::symmetrical::alpha[2]) -
                     parameters::symmetrical::Delta * sin(parameters::symmetrical::beta[2])
                 )
-        ) - parameters::mu_perpend * (
-                v_m_i_perpend[0] * (
+        ) - parameters::mu_n * (
+                v_m_i_n[0] * (
                     parameters::symmetrical::delta[0] *
                     sin(parameters::symmetrical::beta[0] - parameters::symmetrical::alpha[0]) +
                     parameters::symmetrical::Delta * cos(parameters::symmetrical::beta[0])
                 ) +
-                v_m_i_perpend[1] * (
+                v_m_i_n[1] * (
                     parameters::symmetrical::delta[1] *
                     sin(parameters::symmetrical::beta[1] - parameters::symmetrical::alpha[1]) +
                     parameters::symmetrical::Delta * cos(parameters::symmetrical::beta[1])
                 ) +
-                v_m_i_perpend[2] * (
+                v_m_i_n[2] * (
                     parameters::symmetrical::delta[2] *
                     sin(parameters::symmetrical::beta[2] - parameters::symmetrical::alpha[2]) +
                     parameters::symmetrical::Delta * cos(parameters::symmetrical::beta[2])
@@ -123,15 +125,15 @@ Vector<12> rightpart(double t, Vector<12> x, Vector<3> control_minus, Vector<3> 
     ) / parameters::symmetrical::Lambda /  parameters::symmetrical::Lambda;
 
     rez[3] = (
-        parameters::mu_parall * v_m_i_parall[0] + parameters::c1 * u[0] - parameters::c2 * x[3]
+        parameters::mu_tau * v_m_i_tau[0] + parameters::c1 * u[0] - parameters::c2 * x[3]
     ) / parameters::lambda /  parameters::lambda;
 
     rez[4] = (
-        parameters::mu_parall * v_m_i_parall[1] + parameters::c1 * u[1] - parameters::c2 * x[4]
+        parameters::mu_tau * v_m_i_tau[1] + parameters::c1 * u[1] - parameters::c2 * x[4]
     ) / parameters::lambda /  parameters::lambda;
 
     rez[5] = (
-        parameters::mu_parall * v_m_i_parall[2] + parameters::c1 * u[2] - parameters::c2 * x[5]
+        parameters::mu_tau * v_m_i_tau[2] + parameters::c1 * u[2] - parameters::c2 * x[5]
     ) / parameters::lambda /  parameters::lambda;
 
     rez[6] = x[0];

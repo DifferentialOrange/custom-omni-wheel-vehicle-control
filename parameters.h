@@ -50,6 +50,6 @@ namespace parameters
         const std::array<double, 3> delta = {5.0 / 4, 2.0, 5.0 / 4};
     }
 
-    const double mu_parall = 0.09; // friction
-    const double mu_perpend = 0.001; // friction
+    const double mu_n = 0.005; // friction
+    const double mu_tau = 0.05; // friction
 }
