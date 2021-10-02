@@ -105,33 +105,29 @@ void MainWindow::on_pushButton_compute_clicked()
             initial_values[1], final_values[1], initial_values[2], final_values[2],
             final_values[3], final_values[4], final_values[5]);
 
-    Vector<6> u_symm = control;
+    qDebug() << "Control found: " << control[0] << ' ' << control[1] << ' '
+             << control[2] << ' ' << control[3] << ' '
+             << control[4] << ' ' << control[5] << '\n';
 
     DOPRI8_symmetrical_plot (0, T, initial_values, {control[0], control[1], control[2]},
                              {control[3], control[4], control[5]}, t_sw,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                              x_symm, y_symm, theta_symm);
 
-    control = custom_control_find(control, t_sw, T, initial_values, final_values);
+    qDebug() << "Symm plot ok" << '\n';
 
-    DOPRI8_final_plot (0, T, initial_values, {control[0], control[1], control[2]},
-                        {control[3], control[4], control[5]},
-                        t_sw, t, nu_1, nu_2, nu_3, x, y, theta);
+    DOPRI8_friction_plot (0, T, initial_values, {control[0], control[1], control[2]},
+                            {control[3], control[4], control[5]}, t_sw,
+                            t, nu_1, nu_2, nu_3,
+                            x, y, theta);
+    qDebug() << "Friction plot ok" << '\n';
 
     if (plotted)
     {
         ui->PlotWidget_trajectory->clearPlottables();
     }
 
-
-    ui->textBrowser_controls->setText("U_symm = " + QString::number(u_symm[0], 'g', 6)
-            + " " + QString::number(u_symm[1], 'g', 6) + " " + QString::number(u_symm[2], 'g', 6)
-            + " " + QString::number(u_symm[3], 'g', 6) + " " + QString::number(u_symm[4], 'g', 6)
-            + " " + QString::number(u_symm[5], 'g', 6) + '\n'
-            + "U_final   = " + QString::number(control[0], 'g', 6)
-            + " " + QString::number(control[1], 'g', 6) + " " + QString::number(control[2], 'g', 6)
-            + " " + QString::number(control[3], 'g', 6) + " " + QString::number(control[4], 'g', 6)
-            + " " + QString::number(control[5], 'g', 6));
+//    TO DO: show error in text panel
 
     trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
     trajectory_plus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
@@ -194,7 +190,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_t_sw_"
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_friction_t_sw_"
                                 + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
                                 + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
                                 + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)

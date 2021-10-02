@@ -24,6 +24,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 
 SOURCES += \
+    DOPRI8_friction_plot.cpp \
     mainwindow.cpp \
     main.cpp \
     integrate.cpp \

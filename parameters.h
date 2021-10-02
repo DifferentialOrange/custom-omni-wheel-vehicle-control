@@ -4,7 +4,7 @@
 
 namespace precision
 {
-    const double DOPRI8_error_EPS = 1e-9;
+    const double DOPRI8_error_EPS = 1e-7;
     const double Newton_EPS = 1e-9 ;
     const double double_EPS = 1e-13;
     const double hder = 1e-4; //numerical derivative step
@@ -49,4 +49,7 @@ namespace parameters
         const std::array<double, 3> beta = alpha;
         const std::array<double, 3> delta = {5.0 / 4, 2.0, 5.0 / 4};
     }
+
+    const double mu_parall = 0.09; // friction
+    const double mu_perpend = 0.001; // friction
 }
