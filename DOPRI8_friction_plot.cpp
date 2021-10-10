@@ -153,7 +153,9 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
                     Vector<3> control_minus, Vector<3> control_plus, double t_sw,
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
-                    QVector<double> &theta_vec, QVector<double> &v_sign_tau, QVector<double> &v_sign_n)
+                    QVector<double> &theta_vec,
+                    QVector<double> &v_sign_tau_1, QVector<double> &v_sign_tau_2, QVector<double> &v_sign_tau_3,
+                    QVector<double> &v_sign_n_1, QVector<double> &v_sign_n_2, QVector<double> &v_sign_n_3)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
@@ -191,17 +193,13 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
     y_vec.append(xl[7]);
     theta_vec.append(xl[8]);
 
-    v_sign_n.append(
-        v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]) *
-        v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]) *
-        v_m_i_n_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8])
-    );
+    v_sign_n_1.append(v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
+    v_sign_n_2.append(v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
+    v_sign_n_3.append(v_m_i_n_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]));
 
-    v_sign_tau.append(
-        v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]) *
-        v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]) *
-        v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8])
-    );
+    v_sign_tau_1.append(v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
+    v_sign_tau_2.append(v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
+    v_sign_tau_3.append(v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]));
 
     int i = 0;
 
@@ -277,17 +275,13 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
             y_vec.append(xl[7]);
             theta_vec.append(xl[8]);
 
-            v_sign_n.append(
-                v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]) *
-                v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]) *
-                v_m_i_n_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8])
-            );
+            v_sign_n_1.append(v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
+            v_sign_n_2.append(v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
+            v_sign_n_3.append(v_m_i_n_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]));
 
-            v_sign_tau.append(
-                v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]) *
-                v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]) *
-                v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8])
-            );
+            v_sign_tau_1.append(v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
+            v_sign_tau_2.append(v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
+            v_sign_tau_3.append(v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]));
 
             coefmax = 5;
 
@@ -318,17 +312,13 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
                 y_vec.append(xl[7]);
                 theta_vec.append(xl[8]);
 
-                v_sign_n.append(
-                    v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]) *
-                    v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]) *
-                    v_m_i_n_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8])
-                );
+                v_sign_n_1.append(v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
+                v_sign_n_2.append(v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
+                v_sign_n_3.append(v_m_i_n_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]));
 
-                v_sign_tau.append(
-                    v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]) *
-                    v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]) *
-                    v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8])
-                );
+                v_sign_tau_1.append(v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
+                v_sign_tau_2.append(v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
+                v_sign_tau_3.append(v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]));
 
                 coefmax = 5;
             }

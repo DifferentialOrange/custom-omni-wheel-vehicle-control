@@ -108,8 +108,12 @@ void MainWindow::on_pushButton_compute_clicked()
         y.clear();
         theta.clear();
 
-        v_sign_n.clear();
-        v_sign_tau.clear();
+        v_sign_n_1.clear();
+        v_sign_n_2.clear();
+        v_sign_n_3.clear();
+        v_sign_tau_1.clear();
+        v_sign_tau_2.clear();
+        v_sign_tau_3.clear();
     }
 
     Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
@@ -131,13 +135,15 @@ void MainWindow::on_pushButton_compute_clicked()
                             {control[3], control[4], control[5]}, t_sw,
                             t, nu_1, nu_2, nu_3,
                             x, y, theta,
-                            v_sign_tau, v_sign_n);
+                            v_sign_tau_1, v_sign_tau_2, v_sign_tau_3,
+                            v_sign_n_1, v_sign_n_2, v_sign_n_3);
     qDebug() << "Friction plot ok" << '\n';
 
     if (plotted)
     {
         ui->PlotWidget_trajectory->clearPlottables();
-        ui->PlotWidget_speed_coef->clearPlottables();
+        ui->PlotWidget_speed_coef_tau->clearPlottables();
+        ui->PlotWidget_speed_coef_n->clearPlottables();
     }
 
 //    TO DO: show error in text panel
@@ -218,21 +224,54 @@ void MainWindow::on_pushButton_compute_clicked()
                                 + "_mu_tau_" + QString::number(parameters::mu_tau, 'g', 6) + ".pdf");
 
 
-    ui->PlotWidget_speed_coef->addGraph();
-    ui->PlotWidget_speed_coef->graph(0)->setPen(QPen(Qt::blue));
-    ui->PlotWidget_speed_coef->addGraph();
-    ui->PlotWidget_speed_coef->graph(1)->setPen(QPen(Qt::red));
-    ui->PlotWidget_speed_coef->legend->setVisible(true);
+    ui->PlotWidget_speed_coef_tau->legend->setVisible(true);
 
-    ui->PlotWidget_speed_coef->graph(0)->setData(t, v_sign_tau);
-    ui->PlotWidget_speed_coef->graph(1)->setData(t, v_sign_n);
-    ui->PlotWidget_speed_coef->xAxis->setRange(0, T);
-    ui->PlotWidget_speed_coef->yAxis->setRange(- 1.05, 1.05);
-    ui->PlotWidget_speed_coef->graph(0)->setName("tau");
-    ui->PlotWidget_speed_coef->graph(1)->setName("norm");
+    ui->PlotWidget_speed_coef_tau->addGraph();
+    ui->PlotWidget_speed_coef_tau->graph(0)->setData(t, v_sign_tau_1);
+    ui->PlotWidget_speed_coef_tau->graph(0)->setName("v_1");
+    ui->PlotWidget_speed_coef_tau->graph(0)->setPen(QPen(Qt::red));
 
-    ui->PlotWidget_speed_coef->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->PlotWidget_speed_coef->replot();
+    ui->PlotWidget_speed_coef_tau->addGraph();
+    ui->PlotWidget_speed_coef_tau->graph(1)->setData(t, v_sign_tau_2);
+    ui->PlotWidget_speed_coef_tau->graph(1)->setName("v_2");
+    ui->PlotWidget_speed_coef_tau->graph(1)->setPen(QPen(Qt::green));
+
+    ui->PlotWidget_speed_coef_tau->addGraph();
+    ui->PlotWidget_speed_coef_tau->graph(2)->setData(t, v_sign_tau_3);
+    ui->PlotWidget_speed_coef_tau->graph(2)->setName("v_3");
+    ui->PlotWidget_speed_coef_tau->graph(2)->setPen(QPen(Qt::blue));
+
+    ui->PlotWidget_speed_coef_tau->xAxis->setRange(0, T);
+    ui->PlotWidget_speed_coef_tau->yAxis->setRange(-1.05, 1.05);
+    ui->PlotWidget_speed_coef_tau->xAxis->setLabel("t");
+    ui->PlotWidget_speed_coef_tau->yAxis->setLabel("v_tau_sign");
+    ui->PlotWidget_speed_coef_tau->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_speed_coef_tau->replot();
+
+
+    ui->PlotWidget_speed_coef_n->legend->setVisible(true);
+
+    ui->PlotWidget_speed_coef_n->addGraph();
+    ui->PlotWidget_speed_coef_n->graph(0)->setData(t, v_sign_n_1);
+    ui->PlotWidget_speed_coef_n->graph(0)->setName("v_1");
+    ui->PlotWidget_speed_coef_n->graph(0)->setPen(QPen(Qt::red));
+
+    ui->PlotWidget_speed_coef_n->addGraph();
+    ui->PlotWidget_speed_coef_n->graph(1)->setData(t, v_sign_n_2);
+    ui->PlotWidget_speed_coef_n->graph(1)->setName("v_2");
+    ui->PlotWidget_speed_coef_n->graph(1)->setPen(QPen(Qt::green));
+
+    ui->PlotWidget_speed_coef_n->addGraph();
+    ui->PlotWidget_speed_coef_n->graph(2)->setData(t, v_sign_n_3);
+    ui->PlotWidget_speed_coef_n->graph(2)->setName("v_3");
+    ui->PlotWidget_speed_coef_n->graph(2)->setPen(QPen(Qt::blue));
+
+    ui->PlotWidget_speed_coef_n->xAxis->setRange(0, T);
+    ui->PlotWidget_speed_coef_n->yAxis->setRange(-1.05, 1.05);
+    ui->PlotWidget_speed_coef_n->xAxis->setLabel("t");
+    ui->PlotWidget_speed_coef_n->yAxis->setLabel("v_n_sign");
+    ui->PlotWidget_speed_coef_n->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_speed_coef_n->replot();
 
     plotted = true;
 }
