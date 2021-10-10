@@ -82,6 +82,14 @@ void MainWindow::on_pushButton_compute_clicked()
     if (!ok || T <= t_sw)
         return;
 
+    parameters::mu_n = ui->lineEdit_mu_n->text().toDouble(&ok);
+    if (!ok || parameters::mu_n <= 0)
+        return;
+
+    parameters::mu_tau = ui->lineEdit_mu_tau->text().toDouble(&ok);
+    if (!ok || parameters::mu_tau <= 0)
+        return;
+
     if (plotted)
     {
         t_symm.clear();
@@ -99,6 +107,9 @@ void MainWindow::on_pushButton_compute_clicked()
         x.clear();
         y.clear();
         theta.clear();
+
+        v_sign_n.clear();
+        v_sign_tau.clear();
     }
 
     Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
@@ -119,12 +130,14 @@ void MainWindow::on_pushButton_compute_clicked()
     DOPRI8_friction_plot (0, T, initial_values, {control[0], control[1], control[2]},
                             {control[3], control[4], control[5]}, t_sw,
                             t, nu_1, nu_2, nu_3,
-                            x, y, theta);
+                            x, y, theta,
+                            v_sign_tau, v_sign_n);
     qDebug() << "Friction plot ok" << '\n';
 
     if (plotted)
     {
         ui->PlotWidget_trajectory->clearPlottables();
+        ui->PlotWidget_speed_coef->clearPlottables();
     }
 
 //    TO DO: show error in text panel
@@ -201,7 +214,25 @@ void MainWindow::on_pushButton_compute_clicked()
                                 + "_x_T_" + QString::number(final_values[3], 'g', 4)
                                 + "_y_T_" + QString::number(final_values[4], 'g', 4)
                                 + "_theta_T_" + QString::number(final_values[5], 'g', 4)
-                                + ".pdf");
+                                + "_mu_n_" + QString::number(parameters::mu_n, 'g', 6)
+                                + "_mu_tau_" + QString::number(parameters::mu_tau, 'g', 6) + ".pdf");
+
+
+    ui->PlotWidget_speed_coef->addGraph();
+    ui->PlotWidget_speed_coef->graph(0)->setPen(QPen(Qt::blue));
+    ui->PlotWidget_speed_coef->addGraph();
+    ui->PlotWidget_speed_coef->graph(1)->setPen(QPen(Qt::red));
+    ui->PlotWidget_speed_coef->legend->setVisible(true);
+
+    ui->PlotWidget_speed_coef->graph(0)->setData(t, v_sign_tau);
+    ui->PlotWidget_speed_coef->graph(1)->setData(t, v_sign_n);
+    ui->PlotWidget_speed_coef->xAxis->setRange(0, T);
+    ui->PlotWidget_speed_coef->yAxis->setRange(- 1.05, 1.05);
+    ui->PlotWidget_speed_coef->graph(0)->setName("tau");
+    ui->PlotWidget_speed_coef->graph(1)->setName("norm");
+
+    ui->PlotWidget_speed_coef->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_speed_coef->replot();
 
     plotted = true;
 }

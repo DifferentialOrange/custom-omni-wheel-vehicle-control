@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>863</width>
-    <height>474</height>
+    <width>852</width>
+    <height>641</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -336,14 +336,66 @@
      <string>Generate</string>
     </property>
    </widget>
-   <widget class="QTextBrowser" name="textBrowser_controls">
+   <widget class="QCustomPlot" name="PlotWidget_speed_coef" native="true">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>350</y>
-      <width>541</width>
-      <height>51</height>
+      <width>431</width>
+      <height>211</height>
      </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_mu_n">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>380</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0.001</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_mu_tau">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>380</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0.9</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_12">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>350</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>mu_n</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_13">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>350</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>mu_tau</string>
     </property>
    </widget>
   </widget>
@@ -352,7 +404,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>863</width>
+     <width>852</width>
      <height>22</height>
     </rect>
    </property>

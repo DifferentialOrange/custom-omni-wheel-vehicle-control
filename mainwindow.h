@@ -43,6 +43,9 @@ private:
     QVector<double> y;
     QVector<double> theta;
 
+    QVector<double> v_sign_tau;
+    QVector<double> v_sign_n;
+
     Vector<6> initial_values, final_values;
     double t_sw, T;
 
