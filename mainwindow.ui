@@ -356,7 +356,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>0.001</string>
+     <string>0.1</string>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_mu_tau">
