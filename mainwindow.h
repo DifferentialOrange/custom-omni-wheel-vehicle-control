@@ -42,6 +42,13 @@ private:
     QVector<double> x;
     QVector<double> y;
     QVector<double> theta;
+    QVector<double> d_theta;
+    QVector<double> d_chi_1;
+    QVector<double> d_chi_2;
+    QVector<double> d_chi_3;
+    QVector<double> N_1;
+    QVector<double> N_2;
+    QVector<double> N_3;
 
     QVector<double> v_sign_tau_1;
     QVector<double> v_sign_tau_2;

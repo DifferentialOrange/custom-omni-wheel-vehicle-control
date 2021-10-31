@@ -83,7 +83,7 @@ void MainWindow::on_pushButton_compute_clicked()
         return;
 
     parameters::mu_n = ui->lineEdit_mu_n->text().toDouble(&ok);
-    if (!ok || parameters::mu_n <= 0)
+    if (!ok /*|| parameters::mu_n <= 0*/)
         return;
 
     parameters::mu_tau = ui->lineEdit_mu_tau->text().toDouble(&ok);
@@ -134,9 +134,10 @@ void MainWindow::on_pushButton_compute_clicked()
     DOPRI8_friction_plot (0, T, initial_values, {control[0], control[1], control[2]},
                             {control[3], control[4], control[5]}, t_sw,
                             t, nu_1, nu_2, nu_3,
-                            x, y, theta,
+                            x, y, theta, d_chi_1, d_chi_2, d_chi_3, d_theta,
                             v_sign_tau_1, v_sign_tau_2, v_sign_tau_3,
-                            v_sign_n_1, v_sign_n_2, v_sign_n_3);
+                            v_sign_n_1, v_sign_n_2, v_sign_n_3,
+                            N_1, N_2, N_3);
     qDebug() << "Friction plot ok" << '\n';
 
     if (plotted)
@@ -144,6 +145,7 @@ void MainWindow::on_pushButton_compute_clicked()
         ui->PlotWidget_trajectory->clearPlottables();
         ui->PlotWidget_speed_coef_tau->clearPlottables();
         ui->PlotWidget_speed_coef_n->clearPlottables();
+        ui->PlotWidget_N->clearPlottables();
     }
 
 //    TO DO: show error in text panel
@@ -272,6 +274,40 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_speed_coef_n->yAxis->setLabel("v_n_sign");
     ui->PlotWidget_speed_coef_n->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_speed_coef_n->replot();
+
+    double N_1_max = *std::max_element(N_1.begin(), N_1.end());
+    double N_2_max = *std::max_element(N_2.begin(), N_2.end());
+    double N_3_max = *std::max_element(N_3.begin(), N_3.end());
+    double N_max = std::max(N_1_max, std::max(N_2_max, N_3_max));
+
+    double N_1_min = *std::min_element(N_1.begin(), N_1.end());
+    double N_2_min = *std::min_element(N_2.begin(), N_2.end());
+    double N_3_min = *std::min_element(N_3.begin(), N_3.end());
+    double N_min = std::min(N_1_min, std::min(N_2_min, N_3_min));
+
+    ui->PlotWidget_N->legend->setVisible(true);
+
+    ui->PlotWidget_N->addGraph();
+    ui->PlotWidget_N->graph(0)->setData(t, N_1);
+    ui->PlotWidget_N->graph(0)->setName("N_1");
+    ui->PlotWidget_N->graph(0)->setPen(QPen(Qt::red));
+
+    ui->PlotWidget_N->addGraph();
+    ui->PlotWidget_N->graph(1)->setData(t, N_2);
+    ui->PlotWidget_N->graph(1)->setName("N_2");
+    ui->PlotWidget_N->graph(1)->setPen(QPen(Qt::green));
+
+    ui->PlotWidget_N->addGraph();
+    ui->PlotWidget_N->graph(2)->setData(t, N_3);
+    ui->PlotWidget_N->graph(2)->setName("N_3");
+    ui->PlotWidget_N->graph(2)->setPen(QPen(Qt::blue));
+
+    ui->PlotWidget_N->xAxis->setRange(0, T);
+    ui->PlotWidget_N->yAxis->setRange(N_min - 0.05, N_max + 0.05);
+    ui->PlotWidget_N->xAxis->setLabel("t");
+    ui->PlotWidget_N->yAxis->setLabel("N");
+    ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_N->replot();
 
     plotted = true;
 }
