@@ -114,6 +114,10 @@ void MainWindow::on_pushButton_compute_clicked()
         v_sign_tau_1.clear();
         v_sign_tau_2.clear();
         v_sign_tau_3.clear();
+
+        N_1.clear();
+        N_2.clear();
+        N_3.clear();
     }
 
     Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
