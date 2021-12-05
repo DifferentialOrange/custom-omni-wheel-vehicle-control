@@ -8,36 +8,42 @@
 
 //double f_margin = 1e-4;
 
-std::array<double, 3> compute_N(double dd_chi_1, double dd_chi_2, double dd_chi_3,
-                                double d_chi_1, double d_chi_2, double d_chi_3, double d_theta)
+std::array<double, 3> compute_N(double d_chi_1, double d_chi_2, double d_chi_3,
+                                double d_theta, double U_1, double U_2, double U_3,
+                                double sign_v_n_1, double sign_v_n_2, double sign_v_n_3)
 {
     double g = 9.81;
     // works only with certain conditions:
     // S = Q (Delta = 0), corrent for symmetrical vehicle
     double a_data[] = {1, 1, 1,
-                       parameters::symmetrical::Delta - parameters::symmetrical::delta[0] * sin(parameters::symmetrical::alpha[0]),
-                       parameters::symmetrical::Delta - parameters::symmetrical::delta[1] * sin(parameters::symmetrical::alpha[1]),
-                       parameters::symmetrical::Delta - parameters::symmetrical::delta[2] * sin(parameters::symmetrical::alpha[2]),
-                       parameters::symmetrical::delta[0] * cos(parameters::symmetrical::alpha[0]),
-                       parameters::symmetrical::delta[1] * cos(parameters::symmetrical::alpha[1]),
-                       parameters::symmetrical::delta[2] * cos(parameters::symmetrical::alpha[2])};
+                       parameters::symmetrical::Delta - parameters::symmetrical::delta[0] * sin(parameters::symmetrical::alpha[0])
+                       - parameters::mu_n * sign_v_n_1 * sin(parameters::symmetrical::beta[0]),
+                       parameters::symmetrical::Delta - parameters::symmetrical::delta[1] * sin(parameters::symmetrical::alpha[1])
+                       - parameters::mu_n * sign_v_n_2 * sin(parameters::symmetrical::beta[1]),
+                       parameters::symmetrical::Delta - parameters::symmetrical::delta[2] * sin(parameters::symmetrical::alpha[2])
+                       - parameters::mu_n * sign_v_n_3 * sin(parameters::symmetrical::beta[2]),
+                       parameters::symmetrical::delta[0] * cos(parameters::symmetrical::alpha[0])
+                       + parameters::mu_n * sign_v_n_1 * cos(parameters::symmetrical::beta[0]),
+                       parameters::symmetrical::delta[1] * cos(parameters::symmetrical::alpha[1])
+                       + parameters::mu_n * sign_v_n_2 * cos(parameters::symmetrical::beta[1]),
+                       parameters::symmetrical::delta[2] * cos(parameters::symmetrical::alpha[2])
+                       + parameters::mu_n * sign_v_n_3 * cos(parameters::symmetrical::beta[2])};
     double b_data[] = {g,
                        parameters::lambda * parameters::lambda * (
-                            dd_chi_1 * cos(parameters::symmetrical::beta[0]) -
-                            dd_chi_2 * cos(parameters::symmetrical::beta[1]) -
-                            dd_chi_3 * cos(parameters::symmetrical::beta[2]) -
                             d_chi_1 * d_theta * sin(parameters::symmetrical::beta[0]) +
                             d_chi_2 * d_theta * sin(parameters::symmetrical::beta[1]) +
                             d_chi_3 * d_theta * sin(parameters::symmetrical::beta[2])
-                       ),
+                       ) -  cos(parameters::symmetrical::beta[0]) * (parameters::c1 * U_1 - parameters::c2 * d_chi_1) -
+                            cos(parameters::symmetrical::beta[1]) * (parameters::c1 * U_2 - parameters::c2 * d_chi_2) -
+                            cos(parameters::symmetrical::beta[2]) * (parameters::c1 * U_3 - parameters::c2 * d_chi_3),
                        parameters::lambda * parameters::lambda * (
-                            dd_chi_1 * sin(parameters::symmetrical::beta[0]) +
-                            dd_chi_2 * sin(parameters::symmetrical::beta[1]) +
-                            dd_chi_3 * sin(parameters::symmetrical::beta[2]) +
-                            d_chi_1 * d_theta * cos(parameters::symmetrical::beta[0]) +
-                            d_chi_2 * d_theta * cos(parameters::symmetrical::beta[1]) +
+                            - d_chi_1 * d_theta * cos(parameters::symmetrical::beta[0]) -
+                            d_chi_2 * d_theta * cos(parameters::symmetrical::beta[1]) -
                             d_chi_3 * d_theta * cos(parameters::symmetrical::beta[2])
-                      )};
+                       ) -  sin(parameters::symmetrical::beta[0]) * (parameters::c1 * U_1 - parameters::c2 * d_chi_1) -
+                       sin(parameters::symmetrical::beta[1]) * (parameters::c1 * U_2 - parameters::c2 * d_chi_2) -
+                       sin(parameters::symmetrical::beta[2]) * (parameters::c1 * U_3 - parameters::c2 * d_chi_3)
+                      };
 
 
     gsl_matrix_view A = gsl_matrix_view_array(a_data, 3, 3);
@@ -89,13 +95,11 @@ double v_m_i_tau_sign(int i, double dot_x, double dot_y, double dot_theta, doubl
     );
 }
 
-Vector<12> rightpart(double t, Vector<12> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw,
-                     double dd_chi_1, double dd_chi_2, double dd_chi_3, double d_chi_1, double d_chi_2, double d_chi_3, double d_theta)
+Vector<12> rightpart(double t, Vector<12> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw)
 {
     Vector<12> rez;
     Vector<3> u;
 
-    static std::array<double, 3> N = compute_N(dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1, d_chi_2, d_chi_3, d_theta);
     if (t < t_sw)
         u = control_minus;
     else
@@ -112,6 +116,8 @@ Vector<12> rightpart(double t, Vector<12> x, Vector<3> control_minus, Vector<3> 
         v_m_i_tau_sign(1, x[0], x[1], x[2], x[4], x[8]),
         v_m_i_tau_sign(2, x[0], x[1], x[2], x[5], x[8]),
     };
+
+    static std::array<double, 3> N = compute_N(x[3], x[4], x[5], x[2], u[0], u[1], u[2], v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2]);
 
     rez[0] =
         - parameters::mu_n * (
@@ -244,17 +250,24 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
     d_chi_2.append(0);
     d_chi_3.append(0);
     d_theta.append(0);
-    double dd_chi_1 = 0;
-    double dd_chi_2 = 0;
-    double dd_chi_3 = 0;
-    auto N = compute_N(dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+
+    std::array<double, 3> v_m_i_tau = {
+        v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]),
+        v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]),
+        v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]),
+    };
+    auto N = compute_N(xl[3], xl[4], xl[5], xl[2], control_minus[0], control_minus[1], control_minus[2], v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2]);
     N_1.append(N[0]);
     N_2.append(N[1]);
     N_3.append(N[2]);
 
-    v_sign_n_1.append(v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
-    v_sign_n_2.append(v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
-    v_sign_n_3.append(v_m_i_n_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]));
+//    v_sign_n_1.append(v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
+//    v_sign_n_2.append(v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
+//    v_sign_n_3.append(v_m_i_n_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]));
+
+    v_sign_n_1.append(xl[0]);
+    v_sign_n_2.append(xl[1]);
+    v_sign_n_3.append(xl[2]);
 
     v_sign_tau_1.append(v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
     v_sign_tau_2.append(v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
@@ -272,42 +285,42 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
             switch_flag = true;
         }
 
-        k1 = rightpart(tl, xl, control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+        k1 = rightpart(tl, xl, control_minus, control_plus, t_sw);
 
-        k2 = rightpart(tl + h / 18, xl + h * k1 / 18, control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+        k2 = rightpart(tl + h / 18, xl + h * k1 / 18, control_minus, control_plus, t_sw);
 
-        k3 = rightpart(tl + h / 12, xl + h * (k1  / 48 + k2 / 16) , control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+        k3 = rightpart(tl + h / 12, xl + h * (k1  / 48 + k2 / 16) , control_minus, control_plus, t_sw);
 
-        k4 = rightpart(tl + h / 8, xl + h * (k1  / 32 + k3 * 3 / 32) , control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+        k4 = rightpart(tl + h / 8, xl + h * (k1  / 32 + k3 * 3 / 32) , control_minus, control_plus, t_sw);
 
-        k5 = rightpart(tl + h * 5 / 16, xl + h * (k1  * 5 / 16 + k3 * (-75) / 64 + k4 * 75 / 64) , control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+        k5 = rightpart(tl + h * 5 / 16, xl + h * (k1  * 5 / 16 + k3 * (-75) / 64 + k4 * 75 / 64) , control_minus, control_plus, t_sw);
 
-        k6 = rightpart(tl + h * 3 / 8, xl + h * (k1  * 3 / 80 + k4 * 3 / 16 + k5 * 3 / 20) , control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+        k6 = rightpart(tl + h * 3 / 8, xl + h * (k1  * 3 / 80 + k4 * 3 / 16 + k5 * 3 / 20) , control_minus, control_plus, t_sw);
 
         k7 = rightpart(tl + h * 59. / 400., xl + h * (k1  * (29443841. / 614563906.) + k4 * (77736538. / 692538347.) + k5 * ((-28693883.) / 1125000000.) + 
-                k6 * (23124283. / 1800000000.) ), control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+                k6 * (23124283. / 1800000000.) ), control_minus, control_plus, t_sw);
 
         k8 = rightpart(tl + h * 93. / 200., xl + h * (k1  * (16016141. / 946692911.) + k4 * (61564180. / 158732637.) + k5 * (22789713. / 633445777.) + 
-                k6 * (545815736. / 2771057229.) + k7 * ((-180193667.) / 1043307555.) ), control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+                k6 * (545815736. / 2771057229.) + k7 * ((-180193667.) / 1043307555.) ), control_minus, control_plus, t_sw);
 
         k9 = rightpart(tl + h * (5490023248. / 9719169821.), xl + h * (k1  * (39632708. / 573591083.) + k4 * ((-433636366.) / 683701615.) + k5 * ((-421739975.) / 2616292301.) +
-                k6 * (100302831. / 723423059.) + k7 * (790204164. / 839813087.) + k8 * (800635310. / 3783071287.) ), control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+                k6 * (100302831. / 723423059.) + k7 * (790204164. / 839813087.) + k8 * (800635310. / 3783071287.) ), control_minus, control_plus, t_sw);
 
         k10 = rightpart(tl + h * 13 / 20, xl + h * (k1  * (246121993. / 1340847787.) + k4 * ((-37695042795.) / 15268766246.) + k5 * ((-309121744.) / 1061227803.) +
-                k6 * ((-12992083.) / 490766935.) + k7 * (6005943493. / 2108947869.) + k8 * (393006217. / 1396673457) + k9 * (123872331. / 1001029789.) ), control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+                k6 * ((-12992083.) / 490766935.) + k7 * (6005943493. / 2108947869.) + k8 * (393006217. / 1396673457) + k9 * (123872331. / 1001029789.) ), control_minus, control_plus, t_sw);
 
         k11 = rightpart(tl + h * (1201146811. / 1299019798.), xl + h * (k1  * ((-1028468189.) / 846180014.) + k4 * (8478235783. / 508512852.) + k5 * (1311729495. / 1432422823.) +
                 k6 * ((-10304129995.) / 1701304382.) + k7 * ((-48777925059.) / 3047939560.) + k8 * (15336726248. / 1032824649.) + k9 * ((-45442868181.) / 3398467696.) + 
-                k10 * (3065993473. / 597172653.) ), control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+                k10 * (3065993473. / 597172653.) ), control_minus, control_plus, t_sw);
 
         k12 = rightpart(tl + h, xl + h * (k1  * (185892177. / 718116043.) + k4 * ((-3185094517.) / 667107341.) + k5 * ((-477755414.) / 1098053517.) + 
                  k6 * ((-703635378.) / 230739211.) + k7 * (5731566787. / 1027545527.) + k8 * (5232866602. / 850066563.) + k9 * ((-4093664535.) / 808688257.) + 
-                k10 * (3962137247. / 1805957418.) + k11 * (65686358. / 487910083.) ), control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+                k10 * (3962137247. / 1805957418.) + k11 * (65686358. / 487910083.) ), control_minus, control_plus, t_sw);
 
 
         k13 = rightpart(tl + h, xl + h * (k1  * (403863854. / 491063109.) + k4 * ((-5068492393.) / 434740067.) + k5 * ((-411421997.) / 543043805.) + 
                  k6 * (652783627. / 914296604.) + k7 * (11173962825. / 925320556.) + k8 * ((-13158990841.) / 6184727034.) + k9 * (3936647629. / 1978049680.) + 
-                k10 * ((-160528059.) / 685178525.) + k11 * (248638103. / 1413531060.) ), control_minus, control_plus, t_sw, dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+                k10 * ((-160528059.) / 685178525.) + k11 * (248638103. / 1413531060.) ), control_minus, control_plus, t_sw);
 
 
         stepx = h * (k1 * (14005451. / 335480064.) + k6 * ((-59238493.) / 1068277825.) + k7 * (181606767. / 758867731.) + k8 * (561292985. / 797845732.) + 
@@ -334,15 +347,16 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
             y_vec.append(xl[7]);
             theta_vec.append(xl[8]);
 
-            dd_chi_1 = (xl[3] - d_chi_1.last()) / h;
-            dd_chi_2 = (xl[4] - d_chi_2.last()) / h;
-            dd_chi_3 = (xl[5] - d_chi_3.last()) / h;
-
             d_chi_1.append(xl[3]);
             d_chi_2.append(xl[4]);
             d_chi_3.append(xl[5]);
             d_theta.append(xl[2]);
-            auto N = compute_N(dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+            std::array<double, 3> v_m_i_tau = {
+                v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]),
+                v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]),
+                v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]),
+            };
+            auto N = compute_N(xl[3], xl[4], xl[5], xl[2], control_minus[0], control_minus[1], control_minus[2], v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2]);
             N_1.append(N[0]);
             N_2.append(N[1]);
             N_3.append(N[2]);
@@ -384,15 +398,16 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
                 y_vec.append(xl[7]);
                 theta_vec.append(xl[8]);
 
-                dd_chi_1 = (xl[3] - d_chi_1.last()) / h;
-                dd_chi_2 = (xl[4] - d_chi_2.last()) / h;
-                dd_chi_3 = (xl[5] - d_chi_3.last()) / h;
-
                 d_chi_1.append(xl[3]);
                 d_chi_2.append(xl[4]);
                 d_chi_3.append(xl[5]);
                 d_theta.append(xl[2]);
-                auto N = compute_N(dd_chi_1, dd_chi_2, dd_chi_3, d_chi_1.last(), d_chi_2.last(), d_chi_3.last(), d_theta.last());
+                std::array<double, 3> v_m_i_tau = {
+                    v_m_i_tau_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]),
+                    v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]),
+                    v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]),
+                };
+                auto N = compute_N(xl[3], xl[4], xl[5], xl[2], control_minus[0], control_minus[1], control_minus[2], v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2]);
                 N_1.append(N[0]);
                 N_2.append(N[1]);
                 N_3.append(N[2]);
