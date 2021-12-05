@@ -15,12 +15,12 @@ std::array<double, 3> compute_N(double dd_chi_1, double dd_chi_2, double dd_chi_
     // works only with certain conditions:
     // S = Q (Delta = 0), corrent for symmetrical vehicle
     double a_data[] = {1, 1, 1,
+                       parameters::symmetrical::Delta - parameters::symmetrical::delta[0] * sin(parameters::symmetrical::alpha[0]),
+                       parameters::symmetrical::Delta - parameters::symmetrical::delta[1] * sin(parameters::symmetrical::alpha[1]),
+                       parameters::symmetrical::Delta - parameters::symmetrical::delta[2] * sin(parameters::symmetrical::alpha[2]),
                        parameters::symmetrical::delta[0] * cos(parameters::symmetrical::alpha[0]),
                        parameters::symmetrical::delta[1] * cos(parameters::symmetrical::alpha[1]),
-                       parameters::symmetrical::delta[2] * cos(parameters::symmetrical::alpha[2]),
-                       parameters::symmetrical::delta[0] * sin(parameters::symmetrical::alpha[0]),
-                       parameters::symmetrical::delta[1] * sin(parameters::symmetrical::alpha[1]),
-                       parameters::symmetrical::delta[2] * sin(parameters::symmetrical::alpha[2])};
+                       parameters::symmetrical::delta[2] * cos(parameters::symmetrical::alpha[2])};
     double b_data[] = {g,
                        parameters::lambda * parameters::lambda * (
                             dd_chi_1 * cos(parameters::symmetrical::beta[0]) -
