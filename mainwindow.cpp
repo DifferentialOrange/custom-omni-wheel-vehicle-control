@@ -115,6 +115,10 @@ void MainWindow::on_pushButton_compute_clicked()
         v_sign_tau_2.clear();
         v_sign_tau_3.clear();
 
+        N_symm_1.clear();
+        N_symm_2.clear();
+        N_symm_3.clear();
+
         N_1.clear();
         N_2.clear();
         N_3.clear();
@@ -131,7 +135,8 @@ void MainWindow::on_pushButton_compute_clicked()
     DOPRI8_symmetrical_plot (0, T, initial_values, {control[0], control[1], control[2]},
                              {control[3], control[4], control[5]}, t_sw,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
-                             x_symm, y_symm, theta_symm);
+                             x_symm, y_symm, theta_symm,
+                             N_symm_1, N_symm_2, N_symm_3);
 
     qDebug() << "Symm plot ok" << '\n';
 
@@ -150,6 +155,7 @@ void MainWindow::on_pushButton_compute_clicked()
         ui->PlotWidget_speed_coef_tau->clearPlottables();
         ui->PlotWidget_speed_coef_n->clearPlottables();
         ui->PlotWidget_N->clearPlottables();
+        ui->PlotWidget_N_symm->clearPlottables();
     }
 
 //    TO DO: show error in text panel
@@ -259,17 +265,17 @@ void MainWindow::on_pushButton_compute_clicked()
 
     ui->PlotWidget_speed_coef_n->addGraph();
     ui->PlotWidget_speed_coef_n->graph(0)->setData(t, v_sign_n_1);
-    ui->PlotWidget_speed_coef_n->graph(0)->setName("v_1");
+    ui->PlotWidget_speed_coef_n->graph(0)->setName("dot_x");
     ui->PlotWidget_speed_coef_n->graph(0)->setPen(QPen(Qt::red));
 
     ui->PlotWidget_speed_coef_n->addGraph();
     ui->PlotWidget_speed_coef_n->graph(1)->setData(t, v_sign_n_2);
-    ui->PlotWidget_speed_coef_n->graph(1)->setName("v_2");
+    ui->PlotWidget_speed_coef_n->graph(1)->setName("dot_y");
     ui->PlotWidget_speed_coef_n->graph(1)->setPen(QPen(Qt::green));
 
     ui->PlotWidget_speed_coef_n->addGraph();
     ui->PlotWidget_speed_coef_n->graph(2)->setData(t, v_sign_n_3);
-    ui->PlotWidget_speed_coef_n->graph(2)->setName("v_3");
+    ui->PlotWidget_speed_coef_n->graph(2)->setName("dot_theta");
     ui->PlotWidget_speed_coef_n->graph(2)->setPen(QPen(Qt::blue));
 
     ui->PlotWidget_speed_coef_n->xAxis->setRange(0, T);
@@ -278,6 +284,41 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_speed_coef_n->yAxis->setLabel("v_n_sign");
     ui->PlotWidget_speed_coef_n->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_speed_coef_n->replot();
+
+
+    double N_symm_1_max = *std::max_element(N_symm_1.begin(), N_symm_1.end());
+    double N_symm_2_max = *std::max_element(N_symm_2.begin(), N_symm_2.end());
+    double N_symm_3_max = *std::max_element(N_symm_3.begin(), N_symm_3.end());
+    double N_symm_max = std::max(N_symm_1_max, std::max(N_symm_2_max, N_symm_3_max));
+
+    double N_symm_1_min = *std::min_element(N_symm_1.begin(), N_symm_1.end());
+    double N_symm_2_min = *std::min_element(N_symm_2.begin(), N_symm_2.end());
+    double N_symm_3_min = *std::min_element(N_symm_3.begin(), N_symm_3.end());
+    double N_symm_min = std::min(N_symm_1_min, std::min(N_symm_2_min, N_symm_3_min));
+
+    ui->PlotWidget_N_symm->legend->setVisible(true);
+
+    ui->PlotWidget_N_symm->addGraph();
+    ui->PlotWidget_N_symm->graph(0)->setData(t_symm, N_symm_1);
+    ui->PlotWidget_N_symm->graph(0)->setName("N_1");
+    ui->PlotWidget_N_symm->graph(0)->setPen(QPen(Qt::red));
+
+    ui->PlotWidget_N_symm->addGraph();
+    ui->PlotWidget_N_symm->graph(1)->setData(t_symm, N_symm_2);
+    ui->PlotWidget_N_symm->graph(1)->setName("N_2");
+    ui->PlotWidget_N_symm->graph(1)->setPen(QPen(Qt::green));
+
+    ui->PlotWidget_N_symm->addGraph();
+    ui->PlotWidget_N_symm->graph(2)->setData(t_symm, N_symm_3);
+    ui->PlotWidget_N_symm->graph(2)->setName("N_3");
+    ui->PlotWidget_N_symm->graph(2)->setPen(QPen(Qt::blue));
+
+    ui->PlotWidget_N_symm->xAxis->setRange(0, T);
+    ui->PlotWidget_N_symm->yAxis->setRange(N_symm_min - 0.05, N_symm_max + 0.05);
+    ui->PlotWidget_N_symm->xAxis->setLabel("t");
+    ui->PlotWidget_N_symm->yAxis->setLabel("N_nonholonomic");
+    ui->PlotWidget_N_symm->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_N_symm->replot();
 
     double N_1_max = *std::max_element(N_1.begin(), N_1.end());
     double N_2_max = *std::max_element(N_2.begin(), N_2.end());
@@ -309,7 +350,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->xAxis->setRange(0, T);
     ui->PlotWidget_N->yAxis->setRange(N_min - 0.05, N_max + 0.05);
     ui->PlotWidget_N->xAxis->setLabel("t");
-    ui->PlotWidget_N->yAxis->setLabel("N");
+    ui->PlotWidget_N->yAxis->setLabel("N_friction");
     ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N->replot();
 

@@ -2,6 +2,98 @@
 #include "vector.h"
 #include <QVector>
 #include <QDebug>
+#include <gsl/gsl_linalg.h>
+
+std::array<double, 3> compute_N(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw)
+{
+    double g = 9.81;
+    Vector<3> u;
+
+    if (t < t_sw)
+        u = control_minus;
+    else
+        u = control_plus;
+
+    double d_1 = parameters::symmetrical::delta[0];
+    double d_2 = parameters::symmetrical::delta[1];
+    double d_3 = parameters::symmetrical::delta[2];
+
+    double D = parameters::symmetrical::Delta;
+
+    double a_1 = parameters::symmetrical::alpha[0];
+    double a_2 = parameters::symmetrical::alpha[1];
+    double a_3 = parameters::symmetrical::alpha[2];
+    double b_1 = parameters::symmetrical::beta[0];
+    double b_2 = parameters::symmetrical::beta[1];
+    double b_3 = parameters::symmetrical::beta[2];
+
+    double L = parameters::symmetrical::Lambda;
+    double l = parameters::lambda;
+
+//    double D_1 = D * cos(b_1) + d_1 * sin(b_1 - a_1);
+//    double D_2 = D * cos(b_2) + d_2 * sin(b_2 - a_2);
+//    double D_3 = D * cos(b_3) + d_3 * sin(b_3 - a_3);
+
+    double s_11 = -sin(b_1);
+    double s_21 = -sin(b_2);
+    double s_31 = -sin(b_3);
+    double s_12 = cos(b_1);
+    double s_22 = cos(b_2);
+    double s_32 = cos(b_3);
+    double s_13 = (- D * sin(b_1) + d_1 * cos(a_1 - b_1)) / L;
+    double s_23 = (- D * sin(b_2) + d_2 * cos(a_2 - b_2)) / L;
+    double s_33 = (- D * sin(b_3) + d_3 * cos(a_3 - b_3)) / L;
+
+    double d_nu_1 = (x[1] * x[2] / parameters::symmetrical::Lambda + parameters::c1 * (u[0] / 2 - u[1] + u[2] / 2)
+            - 3 * parameters::c2 * x[0] / 2) / parameters::symmetrical::A1;
+    double d_nu_2 = (- x[0] * x[2] / parameters::symmetrical::Lambda + parameters::c1 * sqrt(3) * (u[0]  - u[2]) / 2
+            - 3 * parameters::c2 * x[1] / 2) / parameters::symmetrical::A2;
+    double d_nu_3 = (parameters::c1 * parameters::symmetrical::rho * (u[0] + u[1] + u[2]) / parameters::symmetrical::Lambda
+            - 3 * parameters::c2 * parameters::symmetrical::rho * parameters::symmetrical::rho * x[2]
+            / (parameters::symmetrical::Lambda * parameters::symmetrical::Lambda)) / parameters::symmetrical::A3;
+
+    double a_data[] = {- d_1 * cos(a_1), - d_2 * cos(a_2), - d_3 * cos(a_3),
+                       d_1 * sin(a_1) - D, d_2 * sin(a_2) - D, d_3 * sin(a_3) - D,
+                       1, 1, 1};
+
+    double b_data[] = {
+                        d_nu_1 - x[1] * x[2] / L - l * l * (
+                            s_11 * (d_nu_1 * sin(b_1) + x[2] * x[0] * cos(b_1) / L) +
+                            s_12 * (d_nu_2 * sin(b_1) + x[2] * x[1] * cos(b_1) / L) +
+                            s_13 * (d_nu_3 * sin(b_1) + x[2] * x[2] * cos(b_1) / L) +
+                            s_21 * (d_nu_1 * sin(b_2) + x[2] * x[0] * cos(b_2) / L) +
+                            s_22 * (d_nu_2 * sin(b_2) + x[2] * x[1] * cos(b_2) / L) +
+                            s_23 * (d_nu_3 * sin(b_2) + x[2] * x[2] * cos(b_2) / L) +
+                            s_31 * (d_nu_1 * sin(b_3) + x[2] * x[0] * cos(b_3) / L) +
+                            s_32 * (d_nu_2 * sin(b_3) + x[2] * x[1] * cos(b_3) / L) +
+                            s_33 * (d_nu_3 * sin(b_3) + x[2] * x[2] * cos(b_3) / L)
+                        ),
+                       - d_nu_2 - x[0] * x[2] / L - l * l * (
+                           s_11 * (d_nu_1 * cos(b_1) - x[2] * x[0] * sin(b_1) / L) +
+                           s_12 * (d_nu_2 * cos(b_1) - x[2] * x[1] * sin(b_1) / L) +
+                           s_13 * (d_nu_3 * cos(b_1) - x[2] * x[2] * sin(b_1) / L) +
+                           s_21 * (d_nu_1 * cos(b_2) - x[2] * x[0] * sin(b_2) / L) +
+                           s_22 * (d_nu_2 * cos(b_2) - x[2] * x[1] * sin(b_2) / L) +
+                           s_23 * (d_nu_3 * cos(b_2) - x[2] * x[2] * sin(b_2) / L) +
+                           s_31 * (d_nu_1 * cos(b_3) - x[2] * x[0] * sin(b_3) / L) +
+                           s_32 * (d_nu_2 * cos(b_3) - x[2] * x[1] * sin(b_3) / L) +
+                           s_33 * (d_nu_3 * cos(b_3) - x[2] * x[2] * sin(b_3) / L)
+                       ),
+                       g
+                      };
+
+
+    gsl_matrix_view A = gsl_matrix_view_array(a_data, 3, 3);
+    gsl_vector_view b = gsl_vector_view_array(b_data, 3);
+    gsl_vector*     gsx = gsl_vector_alloc(3);
+
+    gsl_permutation* p = gsl_permutation_alloc(3);
+    int s;
+    gsl_linalg_LU_decomp(&A.matrix, p, &s);
+    gsl_linalg_LU_solve(&A.matrix, p, &b.vector, gsx);
+
+    return { gsx->data[0], gsx->data[1], gsx->data[2] };
+}
 
 //nu1, nu2, nu3, x, y, theta
 
@@ -35,7 +127,8 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                     Vector<3> control_minus, Vector<3> control_plus, double t_sw,
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
-                    QVector<double> &theta_vec)
+                    QVector<double> &theta_vec,
+                    QVector<double> &N_symm_1, QVector<double> &N_symm_2, QVector<double> &N_symm_3)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
@@ -60,6 +153,10 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
     x_vec.append(xl[3]);
     y_vec.append(xl[4]);
     theta_vec.append(xl[5]);
+    auto N = compute_N(tl, xl, control_minus, control_plus, t_sw);
+    N_symm_1.append(N[0]);
+    N_symm_2.append(N[1]);
+    N_symm_3.append(N[2]);
 
 
     while (tl + h < t_right || last_flag)
@@ -133,6 +230,10 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
             x_vec.append(xl[3]);
             y_vec.append(xl[4]);
             theta_vec.append(xl[5]);
+            auto N = compute_N(tl, xl, control_minus, control_plus, t_sw);
+            N_symm_1.append(N[0]);
+            N_symm_2.append(N[1]);
+            N_symm_3.append(N[2]);
 
             coefmax = 5;
 
@@ -162,6 +263,10 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                 x_vec.append(xl[3]);
                 y_vec.append(xl[4]);
                 theta_vec.append(xl[5]);
+                auto N = compute_N(tl, xl, control_minus, control_plus, t_sw);
+                N_symm_1.append(N[0]);
+                N_symm_2.append(N[1]);
+                N_symm_3.append(N[2]);
 
                 coefmax = 5;
             }

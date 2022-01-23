@@ -46,6 +46,9 @@ private:
     QVector<double> d_chi_1;
     QVector<double> d_chi_2;
     QVector<double> d_chi_3;
+    QVector<double> N_symm_1;
+    QVector<double> N_symm_2;
+    QVector<double> N_symm_3;
     QVector<double> N_1;
     QVector<double> N_2;
     QVector<double> N_3;
