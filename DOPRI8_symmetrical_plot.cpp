@@ -73,6 +73,17 @@ std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control_minus, 
                        1, 1, 1};
 
     double b_data[] = {
+                        - d_nu_2 - x[0] * x[2] / L - l * l * (
+                            s_11 * (d_nu_1 * cos(b_1) - x[2] * x[0] * sin(b_1) / L) +
+                            s_12 * (d_nu_2 * cos(b_1) - x[2] * x[1] * sin(b_1) / L) +
+                            s_13 * (d_nu_3 * cos(b_1) - x[2] * x[2] * sin(b_1) / L) +
+                            s_21 * (d_nu_1 * cos(b_2) - x[2] * x[0] * sin(b_2) / L) +
+                            s_22 * (d_nu_2 * cos(b_2) - x[2] * x[1] * sin(b_2) / L) +
+                            s_23 * (d_nu_3 * cos(b_2) - x[2] * x[2] * sin(b_2) / L) +
+                            s_31 * (d_nu_1 * cos(b_3) - x[2] * x[0] * sin(b_3) / L) +
+                            s_32 * (d_nu_2 * cos(b_3) - x[2] * x[1] * sin(b_3) / L) +
+                            s_33 * (d_nu_3 * cos(b_3) - x[2] * x[2] * sin(b_3) / L)
+                        ),
                         d_nu_1 - x[1] * x[2] / L - l * l * (
                             s_11 * (d_nu_1 * sin(b_1) + x[2] * x[0] * cos(b_1) / L) +
                             s_12 * (d_nu_2 * sin(b_1) + x[2] * x[1] * cos(b_1) / L) +
@@ -84,17 +95,6 @@ std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control_minus, 
                             s_32 * (d_nu_2 * sin(b_3) + x[2] * x[1] * cos(b_3) / L) +
                             s_33 * (d_nu_3 * sin(b_3) + x[2] * x[2] * cos(b_3) / L)
                         ),
-                       - d_nu_2 - x[0] * x[2] / L - l * l * (
-                           s_11 * (d_nu_1 * cos(b_1) - x[2] * x[0] * sin(b_1) / L) +
-                           s_12 * (d_nu_2 * cos(b_1) - x[2] * x[1] * sin(b_1) / L) +
-                           s_13 * (d_nu_3 * cos(b_1) - x[2] * x[2] * sin(b_1) / L) +
-                           s_21 * (d_nu_1 * cos(b_2) - x[2] * x[0] * sin(b_2) / L) +
-                           s_22 * (d_nu_2 * cos(b_2) - x[2] * x[1] * sin(b_2) / L) +
-                           s_23 * (d_nu_3 * cos(b_2) - x[2] * x[2] * sin(b_2) / L) +
-                           s_31 * (d_nu_1 * cos(b_3) - x[2] * x[0] * sin(b_3) / L) +
-                           s_32 * (d_nu_2 * cos(b_3) - x[2] * x[1] * sin(b_3) / L) +
-                           s_33 * (d_nu_3 * cos(b_3) - x[2] * x[2] * sin(b_3) / L)
-                       ),
                        g
                       };
 
