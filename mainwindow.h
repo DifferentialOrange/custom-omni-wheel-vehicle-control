@@ -52,6 +52,12 @@ private:
     QVector<double> N_1;
     QVector<double> N_2;
     QVector<double> N_3;
+    QVector<double> b_symm_1;
+    QVector<double> b_symm_2;
+    QVector<double> b_symm_3;
+    QVector<double> b_1;
+    QVector<double> b_2;
+    QVector<double> b_3;
 
     QVector<double> v_sign_tau_1;
     QVector<double> v_sign_tau_2;

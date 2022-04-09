@@ -8,13 +8,37 @@
 
 //double f_margin = 1e-4;
 
-std::array<double, 3> compute_N(double d_chi_1, double d_chi_2, double d_chi_3,
-                                double d_theta, double U_1, double U_2, double U_3,
-                                double sign_v_n_1, double sign_v_n_2, double sign_v_n_3)
+bool of_1 = false;
+bool of_2 = false;
+
+std::array<double, 6> compute_N(double d_chi_1, double d_chi_2, double d_chi_3,
+                                double d_theta, Vector<3> control_minus, Vector<3> control_plus,
+                                double sign_v_n_1, double sign_v_n_2, double sign_v_n_3,
+                                double t, double t_sw)
 {
     double g = 9.81;
     // works only with certain conditions:
-    // S = Q (Delta = 0), corrent for symmetrical vehicle
+    // S = Q (Delta = 0), corrent for symmetrical vehicle    Vector<3> u;
+    Vector<3> u;
+
+    if (t < t_sw) {
+        if (of_1 == false) {
+            qDebug() << "control_minus" << '\n';
+            qDebug() << control_minus[0] << '\n';
+            of_1 = true;
+        }
+        u = control_minus;
+    } else {
+        if (of_2 == false) {
+            qDebug() << "control_plus" << '\n';
+            qDebug() << control_plus[0] << '\n';
+            of_2 = true;
+        }
+        u = control_plus;
+    }
+
+    //qDebug() << "u friction " << u[0] << " " << u[1] << " " << u[2] << '\n';
+
     double a_data[] = {1, 1, 1,
                        parameters::symmetrical::Delta - parameters::symmetrical::delta[0] * sin(parameters::symmetrical::alpha[0])
                        - parameters::mu_n * sign_v_n_1 * sin(parameters::symmetrical::beta[0]),
@@ -33,16 +57,16 @@ std::array<double, 3> compute_N(double d_chi_1, double d_chi_2, double d_chi_3,
                             d_chi_1 * d_theta * sin(parameters::symmetrical::beta[0]) +
                             d_chi_2 * d_theta * sin(parameters::symmetrical::beta[1]) +
                             d_chi_3 * d_theta * sin(parameters::symmetrical::beta[2])
-                       ) -  cos(parameters::symmetrical::beta[0]) * (parameters::c1 * U_1 - parameters::c2 * d_chi_1) -
-                            cos(parameters::symmetrical::beta[1]) * (parameters::c1 * U_2 - parameters::c2 * d_chi_2) -
-                            cos(parameters::symmetrical::beta[2]) * (parameters::c1 * U_3 - parameters::c2 * d_chi_3),
+                       ) -  cos(parameters::symmetrical::beta[0]) * (parameters::c1 * u[0] - parameters::c2 * d_chi_1) -
+                            cos(parameters::symmetrical::beta[1]) * (parameters::c1 * u[1] - parameters::c2 * d_chi_2) -
+                            cos(parameters::symmetrical::beta[2]) * (parameters::c1 * u[2] - parameters::c2 * d_chi_3),
                        parameters::lambda * parameters::lambda * (
                             - d_chi_1 * d_theta * cos(parameters::symmetrical::beta[0]) -
                             d_chi_2 * d_theta * cos(parameters::symmetrical::beta[1]) -
                             d_chi_3 * d_theta * cos(parameters::symmetrical::beta[2])
-                       ) -  sin(parameters::symmetrical::beta[0]) * (parameters::c1 * U_1 - parameters::c2 * d_chi_1) -
-                       sin(parameters::symmetrical::beta[1]) * (parameters::c1 * U_2 - parameters::c2 * d_chi_2) -
-                       sin(parameters::symmetrical::beta[2]) * (parameters::c1 * U_3 - parameters::c2 * d_chi_3)
+                       ) -  sin(parameters::symmetrical::beta[0]) * (parameters::c1 * u[0] - parameters::c2 * d_chi_1) -
+                       sin(parameters::symmetrical::beta[1]) * (parameters::c1 * u[1] - parameters::c2 * d_chi_2) -
+                       sin(parameters::symmetrical::beta[2]) * (parameters::c1 * u[2] - parameters::c2 * d_chi_3)
                       };
 
 
@@ -55,7 +79,7 @@ std::array<double, 3> compute_N(double d_chi_1, double d_chi_2, double d_chi_3,
     gsl_linalg_LU_decomp(&A.matrix, p, &s);
     gsl_linalg_LU_solve(&A.matrix, p, &b.vector, x);
 
-    return { x->data[0], x->data[1], x->data[2] };
+    return { x->data[0], x->data[1], x->data[2], b_data[0], b_data[1], b_data[2] };
 }
 
 double f_sign(double a)
@@ -117,7 +141,7 @@ Vector<12> rightpart(double t, Vector<12> x, Vector<3> control_minus, Vector<3> 
         v_m_i_tau_sign(2, x[0], x[1], x[2], x[5], x[8]),
     };
 
-    static std::array<double, 3> N = compute_N(x[3], x[4], x[5], x[2], u[0], u[1], u[2], v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2]);
+    auto N = compute_N(x[3], x[4], x[5], x[2], control_minus, control_plus, v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2], t, t_sw);
 
     rez[0] =
         - parameters::mu_n * (
@@ -208,7 +232,8 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
                                 QVector<double> &theta_vec, QVector<double> &d_chi_1, QVector<double> &d_chi_2, QVector<double> &d_chi_3, QVector<double> &d_theta,
                                 QVector<double> &v_sign_tau_1, QVector<double> &v_sign_tau_2, QVector<double> &v_sign_tau_3,
                                 QVector<double> &v_sign_n_1, QVector<double> &v_sign_n_2, QVector<double> &v_sign_n_3,
-                                QVector<double> &N_1, QVector<double> &N_2, QVector<double> &N_3)
+                                QVector<double> &N_1, QVector<double> &N_2, QVector<double> &N_3,
+                                QVector<double> &b_1, QVector<double> &b_2, QVector<double> &b_3)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
@@ -256,10 +281,13 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
         v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]),
         v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]),
     };
-    auto N = compute_N(xl[3], xl[4], xl[5], xl[2], control_minus[0], control_minus[1], control_minus[2], v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2]);
-    N_1.append(N[0]);
-    N_2.append(N[1]);
-    N_3.append(N[2]);
+    auto N_res = compute_N(xl[3], xl[4], xl[5], xl[2], control_minus, control_plus, v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2], tl, t_sw);
+    N_1.append(N_res[0]);
+    N_2.append(N_res[1]);
+    N_3.append(N_res[2]);
+    b_1.append(N_res[3]);
+    b_2.append(N_res[4]);
+    b_3.append(N_res[5]);
 
 //    v_sign_n_1.append(v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
 //    v_sign_n_2.append(v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
@@ -356,10 +384,13 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
                 v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]),
                 v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]),
             };
-            auto N = compute_N(xl[3], xl[4], xl[5], xl[2], control_minus[0], control_minus[1], control_minus[2], v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2]);
-            N_1.append(N[0]);
-            N_2.append(N[1]);
-            N_3.append(N[2]);
+            auto N_res = compute_N(xl[3], xl[4], xl[5], xl[2], control_minus, control_plus, v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2], tl, t_sw);
+            N_1.append(N_res[0]);
+            N_2.append(N_res[1]);
+            N_3.append(N_res[2]);
+            b_1.append(N_res[3]);
+            b_2.append(N_res[4]);
+            b_3.append(N_res[5]);
 
             v_sign_n_1.append(v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
             v_sign_n_2.append(v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));
@@ -407,10 +438,13 @@ Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial
                     v_m_i_tau_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]),
                     v_m_i_tau_sign(2, xl[0], xl[1], xl[2], xl[5], xl[8]),
                 };
-                auto N = compute_N(xl[3], xl[4], xl[5], xl[2], control_minus[0], control_minus[1], control_minus[2], v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2]);
-                N_1.append(N[0]);
-                N_2.append(N[1]);
-                N_3.append(N[2]);
+                auto N_res = compute_N(xl[3], xl[4], xl[5], xl[2], control_minus, control_plus, v_m_i_tau[0], v_m_i_tau[1], v_m_i_tau[2], tl, t_sw);
+                N_1.append(N_res[0]);
+                N_2.append(N_res[1]);
+                N_3.append(N_res[2]);
+                b_1.append(N_res[3]);
+                b_2.append(N_res[4]);
+                b_3.append(N_res[5]);
 
                 v_sign_n_1.append(v_m_i_n_sign(0, xl[0], xl[1], xl[2], xl[3], xl[8]));
                 v_sign_n_2.append(v_m_i_n_sign(1, xl[0], xl[1], xl[2], xl[4], xl[8]));

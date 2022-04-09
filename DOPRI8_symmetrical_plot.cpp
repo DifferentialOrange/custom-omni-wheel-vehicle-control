@@ -4,15 +4,31 @@
 #include <QDebug>
 #include <gsl/gsl_linalg.h>
 
-std::array<double, 3> compute_N(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw)
+bool o_1 = false;
+bool o_2 = false;
+
+std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw)
 {
     double g = 9.81;
     Vector<3> u;
 
-    if (t < t_sw)
+    if (t < t_sw) {
+        if (o_1 == false) {
+            qDebug() << "control_minus" << '\n';
+            qDebug() << control_minus[0] << '\n';
+            o_1 = true;
+        }
         u = control_minus;
-    else
+    } else {
+        if (o_2 == false) {
+            qDebug() << "control_plus" << '\n';
+            qDebug() << control_plus[0] << '\n';
+            o_2 = true;
+        }
         u = control_plus;
+    }
+
+        //qDebug() << "u symm " << u[0] << " " << u[1] << " " << u[2] << '\n';
 
     double d_1 = parameters::symmetrical::delta[0];
     double d_2 = parameters::symmetrical::delta[1];
@@ -92,7 +108,7 @@ std::array<double, 3> compute_N(double t, Vector<6> x, Vector<3> control_minus, 
     gsl_linalg_LU_decomp(&A.matrix, p, &s);
     gsl_linalg_LU_solve(&A.matrix, p, &b.vector, gsx);
 
-    return { gsx->data[0], gsx->data[1], gsx->data[2] };
+    return { gsx->data[0], gsx->data[1], gsx->data[2], b_data[0], b_data[1], b_data[2] };
 }
 
 //nu1, nu2, nu3, x, y, theta
@@ -128,7 +144,8 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
                     QVector<double> &theta_vec,
-                    QVector<double> &N_symm_1, QVector<double> &N_symm_2, QVector<double> &N_symm_3)
+                    QVector<double> &N_symm_1, QVector<double> &N_symm_2, QVector<double> &N_symm_3,
+                    QVector<double> &b_symm_1, QVector<double> &b_symm_2, QVector<double> &b_symm_3)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
@@ -153,10 +170,13 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
     x_vec.append(xl[3]);
     y_vec.append(xl[4]);
     theta_vec.append(xl[5]);
-    auto N = compute_N(tl, xl, control_minus, control_plus, t_sw);
-    N_symm_1.append(N[0]);
-    N_symm_2.append(N[1]);
-    N_symm_3.append(N[2]);
+    auto N_res = compute_N(tl, xl, control_minus, control_plus, t_sw);
+    N_symm_1.append(N_res[0]);
+    N_symm_2.append(N_res[1]);
+    N_symm_3.append(N_res[2]);
+    b_symm_1.append(N_res[5]);
+    b_symm_2.append(-N_res[4]);
+    b_symm_3.append(-N_res[3]);
 
 
     while (tl + h < t_right || last_flag)
@@ -230,10 +250,13 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
             x_vec.append(xl[3]);
             y_vec.append(xl[4]);
             theta_vec.append(xl[5]);
-            auto N = compute_N(tl, xl, control_minus, control_plus, t_sw);
-            N_symm_1.append(N[0]);
-            N_symm_2.append(N[1]);
-            N_symm_3.append(N[2]);
+            auto N_res = compute_N(tl, xl, control_minus, control_plus, t_sw);
+            N_symm_1.append(N_res[0]);
+            N_symm_2.append(N_res[1]);
+            N_symm_3.append(N_res[2]);
+            b_symm_1.append(N_res[5]);
+            b_symm_2.append(-N_res[4]);
+            b_symm_3.append(-N_res[3]);
 
             coefmax = 5;
 
@@ -263,10 +286,13 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                 x_vec.append(xl[3]);
                 y_vec.append(xl[4]);
                 theta_vec.append(xl[5]);
-                auto N = compute_N(tl, xl, control_minus, control_plus, t_sw);
-                N_symm_1.append(N[0]);
-                N_symm_2.append(N[1]);
-                N_symm_3.append(N[2]);
+                auto N_res = compute_N(tl, xl, control_minus, control_plus, t_sw);
+                N_symm_1.append(N_res[0]);
+                N_symm_2.append(N_res[1]);
+                N_symm_3.append(N_res[2]);
+                b_symm_1.append(N_res[5]);
+                b_symm_2.append(-N_res[4]);
+                b_symm_3.append(-N_res[3]);
 
                 coefmax = 5;
             }

@@ -122,6 +122,14 @@ void MainWindow::on_pushButton_compute_clicked()
         N_1.clear();
         N_2.clear();
         N_3.clear();
+
+        b_symm_1.clear();
+        b_symm_2.clear();
+        b_symm_3.clear();
+
+        b_1.clear();
+        b_2.clear();
+        b_3.clear();
     }
 
     Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
@@ -136,7 +144,8 @@ void MainWindow::on_pushButton_compute_clicked()
                              {control[3], control[4], control[5]}, t_sw,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                              x_symm, y_symm, theta_symm,
-                             N_symm_1, N_symm_2, N_symm_3);
+                             N_symm_1, N_symm_2, N_symm_3,
+                             b_symm_1, b_symm_2, b_symm_3);
 
     qDebug() << "Symm plot ok" << '\n';
 
@@ -146,8 +155,22 @@ void MainWindow::on_pushButton_compute_clicked()
                             x, y, theta, d_chi_1, d_chi_2, d_chi_3, d_theta,
                             v_sign_tau_1, v_sign_tau_2, v_sign_tau_3,
                             v_sign_n_1, v_sign_n_2, v_sign_n_3,
-                            N_1, N_2, N_3);
+                            N_1, N_2, N_3, b_1, b_2, b_3);
     qDebug() << "Friction plot ok" << '\n';
+
+
+    qDebug() << "N: " << N_1[0] << ' ' << N_2[0] << ' '
+             << N_3[0] << ' ' << N_symm_1[0] << ' '
+             << N_symm_2[0] << ' ' << N_symm_3[0] << '\n';
+
+    qDebug() << "N: " << N_1.last() << ' ' << N_2.last() << ' '
+             << N_3.last() << ' ' << N_symm_1.last() << ' '
+             << N_symm_2.last() << ' ' << N_symm_3.last() << '\n';
+
+    qDebug() << "t: " << t[0] << ' ' << t_symm[0] << '\n';
+
+
+    qDebug() << "t: " << t.last() << ' ' << t_symm.last() << '\n';
 
     if (plotted)
     {
@@ -156,6 +179,8 @@ void MainWindow::on_pushButton_compute_clicked()
         ui->PlotWidget_speed_coef_n->clearPlottables();
         ui->PlotWidget_N->clearPlottables();
         ui->PlotWidget_N_symm->clearPlottables();
+        ui->PlotWidget_b->clearPlottables();
+        ui->PlotWidget_b_symm->clearPlottables();
     }
 
 //    TO DO: show error in text panel
@@ -353,6 +378,75 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->yAxis->setLabel("N_friction");
     ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N->replot();
+
+
+    double b_1_max = *std::max_element(b_1.begin(), b_1.end());
+    double b_2_max = *std::max_element(b_2.begin(), b_2.end());
+    double b_3_max = *std::max_element(b_3.begin(), b_3.end());
+    double b_max = std::max(b_1_max, std::max(b_2_max, b_3_max));
+
+    double b_1_min = *std::min_element(b_1.begin(), b_1.end());
+    double b_2_min = *std::min_element(b_2.begin(), b_2.end());
+    double b_3_min = *std::min_element(b_3.begin(), b_3.end());
+    double b_min = std::min(b_1_min, std::min(b_2_min, b_3_min));
+
+    double b_symm_1_max = *std::max_element(b_symm_1.begin(), b_symm_1.end());
+    double b_symm_2_max = *std::max_element(b_symm_2.begin(), b_symm_2.end());
+    double b_symm_3_max = *std::max_element(b_symm_3.begin(), b_symm_3.end());
+    double b_symm_max = std::max(b_symm_1_max, std::max(b_symm_2_max, b_symm_3_max));
+
+    double b_symm_1_min = *std::min_element(b_symm_1.begin(), b_symm_1.end());
+    double b_symm_2_min = *std::min_element(b_symm_2.begin(), b_symm_2.end());
+    double b_symm_3_min = *std::min_element(b_symm_3.begin(), b_symm_3.end());
+    double b_symm_min = std::min(b_symm_1_min, std::min(b_symm_2_min, b_symm_3_min));
+
+    ui->PlotWidget_b_symm->legend->setVisible(true);
+
+    ui->PlotWidget_b_symm->addGraph();
+    ui->PlotWidget_b_symm->graph(0)->setData(t_symm, b_symm_1);
+    ui->PlotWidget_b_symm->graph(0)->setName("b_1");
+    ui->PlotWidget_b_symm->graph(0)->setPen(QPen(Qt::red));
+
+    ui->PlotWidget_b_symm->addGraph();
+    ui->PlotWidget_b_symm->graph(1)->setData(t_symm, b_symm_2);
+    ui->PlotWidget_b_symm->graph(1)->setName("b_2");
+    ui->PlotWidget_b_symm->graph(1)->setPen(QPen(Qt::green));
+
+    ui->PlotWidget_b_symm->addGraph();
+    ui->PlotWidget_b_symm->graph(2)->setData(t_symm, b_symm_3);
+    ui->PlotWidget_b_symm->graph(2)->setName("b_3");
+    ui->PlotWidget_b_symm->graph(2)->setPen(QPen(Qt::blue));
+
+    ui->PlotWidget_b_symm->xAxis->setRange(0, T);
+    ui->PlotWidget_b_symm->yAxis->setRange(b_symm_min - 0.05, b_symm_max + 0.05);
+    ui->PlotWidget_b_symm->xAxis->setLabel("t");
+    ui->PlotWidget_b_symm->yAxis->setLabel("b_nonholonomic");
+    ui->PlotWidget_b_symm->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_b_symm->replot();
+
+    ui->PlotWidget_b->legend->setVisible(true);
+
+    ui->PlotWidget_b->addGraph();
+    ui->PlotWidget_b->graph(0)->setData(t, b_1);
+    ui->PlotWidget_b->graph(0)->setName("b_1");
+    ui->PlotWidget_b->graph(0)->setPen(QPen(Qt::red));
+
+    ui->PlotWidget_b->addGraph();
+    ui->PlotWidget_b->graph(1)->setData(t, b_2);
+    ui->PlotWidget_b->graph(1)->setName("b_2");
+    ui->PlotWidget_b->graph(1)->setPen(QPen(Qt::green));
+
+    ui->PlotWidget_b->addGraph();
+    ui->PlotWidget_b->graph(2)->setData(t, b_3);
+    ui->PlotWidget_b->graph(2)->setName("b_3");
+    ui->PlotWidget_b->graph(2)->setPen(QPen(Qt::blue));
+
+    ui->PlotWidget_b->xAxis->setRange(0, T);
+    ui->PlotWidget_b->yAxis->setRange(b_min - 0.05, b_max + 0.05);
+    ui->PlotWidget_b->xAxis->setLabel("t");
+    ui->PlotWidget_b->yAxis->setLabel("b_friction");
+    ui->PlotWidget_b->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_b->replot();
 
     plotted = true;
 }
