@@ -345,6 +345,20 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N_symm->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N_symm->replot();
 
+    ui->PlotWidget_N_symm->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_symm_t_sw_"
+                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
+                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
+                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
+                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
+                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
+                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
+                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
+                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
+                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
+                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
+                                + "_mu_n_" + QString::number(parameters::mu_n, 'g', 6)
+                                + "_mu_tau_" + QString::number(parameters::mu_tau, 'g', 6) + ".pdf");
+
     double N_1_max = *std::max_element(N_1.begin(), N_1.end());
     double N_2_max = *std::max_element(N_2.begin(), N_2.end());
     double N_3_max = *std::max_element(N_3.begin(), N_3.end());
@@ -354,6 +368,7 @@ void MainWindow::on_pushButton_compute_clicked()
     double N_2_min = *std::min_element(N_2.begin(), N_2.end());
     double N_3_min = *std::min_element(N_3.begin(), N_3.end());
     double N_min = std::min(N_1_min, std::min(N_2_min, N_3_min));
+
 
     ui->PlotWidget_N->legend->setVisible(true);
 
@@ -378,6 +393,20 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->yAxis->setLabel("N_friction");
     ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N->replot();
+
+    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_friction_t_sw_"
+                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
+                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
+                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
+                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
+                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
+                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
+                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
+                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
+                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
+                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
+                                + "_mu_n_" + QString::number(parameters::mu_n, 'g', 6)
+                                + "_mu_tau_" + QString::number(parameters::mu_tau, 'g', 6) + ".pdf");
 
 
     double b_1_max = *std::max_element(b_1.begin(), b_1.end());

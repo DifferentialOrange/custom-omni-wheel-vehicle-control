@@ -59,43 +59,33 @@ std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control_minus, 
     double s_13 = (- D * sin(b_1) + d_1 * cos(a_1 - b_1)) / L;
     double s_23 = (- D * sin(b_2) + d_2 * cos(a_2 - b_2)) / L;
     double s_33 = (- D * sin(b_3) + d_3 * cos(a_3 - b_3)) / L;
+    double d_chi_1 = s_11 * x[0] + s_12 * x[1] * s_13 * x[2];
+    double d_chi_2 = s_21 * x[0] + s_22 * x[1] * s_23 * x[2];
+    double d_chi_3 = s_31 * x[0] + s_32 * x[1] * s_33 * x[2];
+    double d_theta = x[2] * L;
 
-    double d_nu_1 = (x[1] * x[2] / parameters::symmetrical::Lambda + parameters::c1 * (u[0] / 2 - u[1] + u[2] / 2)
-            - 3 * parameters::c2 * x[0] / 2) / parameters::symmetrical::A1;
-    double d_nu_2 = (- x[0] * x[2] / parameters::symmetrical::Lambda + parameters::c1 * sqrt(3) * (u[0]  - u[2]) / 2
-            - 3 * parameters::c2 * x[1] / 2) / parameters::symmetrical::A2;
-    double d_nu_3 = (parameters::c1 * parameters::symmetrical::rho * (u[0] + u[1] + u[2]) / parameters::symmetrical::Lambda
-            - 3 * parameters::c2 * parameters::symmetrical::rho * parameters::symmetrical::rho * x[2]
-            / (parameters::symmetrical::Lambda * parameters::symmetrical::Lambda)) / parameters::symmetrical::A3;
-
-    double a_data[] = {- d_1 * cos(a_1), - d_2 * cos(a_2), - d_3 * cos(a_3),
-                       d_1 * sin(a_1) - D, d_2 * sin(a_2) - D, d_3 * sin(a_3) - D,
-                       1, 1, 1};
-
-    double b_data[] = {
-                        - d_nu_2 - x[0] * x[2] / L - l * l * (
-                            s_11 * (d_nu_1 * cos(b_1) - x[2] * x[0] * sin(b_1) / L) +
-                            s_12 * (d_nu_2 * cos(b_1) - x[2] * x[1] * sin(b_1) / L) +
-                            s_13 * (d_nu_3 * cos(b_1) - x[2] * x[2] * sin(b_1) / L) +
-                            s_21 * (d_nu_1 * cos(b_2) - x[2] * x[0] * sin(b_2) / L) +
-                            s_22 * (d_nu_2 * cos(b_2) - x[2] * x[1] * sin(b_2) / L) +
-                            s_23 * (d_nu_3 * cos(b_2) - x[2] * x[2] * sin(b_2) / L) +
-                            s_31 * (d_nu_1 * cos(b_3) - x[2] * x[0] * sin(b_3) / L) +
-                            s_32 * (d_nu_2 * cos(b_3) - x[2] * x[1] * sin(b_3) / L) +
-                            s_33 * (d_nu_3 * cos(b_3) - x[2] * x[2] * sin(b_3) / L)
-                        ),
-                        d_nu_1 - x[1] * x[2] / L - l * l * (
-                            s_11 * (d_nu_1 * sin(b_1) + x[2] * x[0] * cos(b_1) / L) +
-                            s_12 * (d_nu_2 * sin(b_1) + x[2] * x[1] * cos(b_1) / L) +
-                            s_13 * (d_nu_3 * sin(b_1) + x[2] * x[2] * cos(b_1) / L) +
-                            s_21 * (d_nu_1 * sin(b_2) + x[2] * x[0] * cos(b_2) / L) +
-                            s_22 * (d_nu_2 * sin(b_2) + x[2] * x[1] * cos(b_2) / L) +
-                            s_23 * (d_nu_3 * sin(b_2) + x[2] * x[2] * cos(b_2) / L) +
-                            s_31 * (d_nu_1 * sin(b_3) + x[2] * x[0] * cos(b_3) / L) +
-                            s_32 * (d_nu_2 * sin(b_3) + x[2] * x[1] * cos(b_3) / L) +
-                            s_33 * (d_nu_3 * sin(b_3) + x[2] * x[2] * cos(b_3) / L)
-                        ),
-                       g
+    double a_data[] = {1, 1, 1,
+                       parameters::symmetrical::Delta - parameters::symmetrical::delta[0] * sin(parameters::symmetrical::alpha[0]),
+                       parameters::symmetrical::Delta - parameters::symmetrical::delta[1] * sin(parameters::symmetrical::alpha[1]),
+                       parameters::symmetrical::Delta - parameters::symmetrical::delta[2] * sin(parameters::symmetrical::alpha[2]),
+                       parameters::symmetrical::delta[0] * cos(parameters::symmetrical::alpha[0]),
+                       parameters::symmetrical::delta[1] * cos(parameters::symmetrical::alpha[1]),
+                       parameters::symmetrical::delta[2] * cos(parameters::symmetrical::alpha[2])};
+    double b_data[] = {g,
+                       parameters::lambda * parameters::lambda * (
+                            d_chi_1 * d_theta * sin(parameters::symmetrical::beta[0]) +
+                            d_chi_2 * d_theta * sin(parameters::symmetrical::beta[1]) +
+                            d_chi_3 * d_theta * sin(parameters::symmetrical::beta[2])
+                       ) -  cos(parameters::symmetrical::beta[0]) * (parameters::c1 * u[0] - parameters::c2 * d_chi_1) -
+                            cos(parameters::symmetrical::beta[1]) * (parameters::c1 * u[1] - parameters::c2 * d_chi_2) -
+                            cos(parameters::symmetrical::beta[2]) * (parameters::c1 * u[2] - parameters::c2 * d_chi_3),
+                       parameters::lambda * parameters::lambda * (
+                            - d_chi_1 * d_theta * cos(parameters::symmetrical::beta[0]) -
+                            d_chi_2 * d_theta * cos(parameters::symmetrical::beta[1]) -
+                            d_chi_3 * d_theta * cos(parameters::symmetrical::beta[2])
+                       ) -  sin(parameters::symmetrical::beta[0]) * (parameters::c1 * u[0] - parameters::c2 * d_chi_1) -
+                       sin(parameters::symmetrical::beta[1]) * (parameters::c1 * u[1] - parameters::c2 * d_chi_2) -
+                       sin(parameters::symmetrical::beta[2]) * (parameters::c1 * u[2] - parameters::c2 * d_chi_3)
                       };
 
 
