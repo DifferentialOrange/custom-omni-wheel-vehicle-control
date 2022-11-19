@@ -7,7 +7,7 @@
 bool o_1 = false;
 bool o_2 = false;
 
-std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw)
+std::array<double, 10> compute_N(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw)
 {
     double g = 9.81;
     Vector<3> u;
@@ -98,7 +98,8 @@ std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control_minus, 
     gsl_linalg_LU_decomp(&A.matrix, p, &s);
     gsl_linalg_LU_solve(&A.matrix, p, &b.vector, gsx);
 
-    return { gsx->data[0], gsx->data[1], gsx->data[2], b_data[0], b_data[1], b_data[2] };
+    return { gsx->data[0], gsx->data[1], gsx->data[2], b_data[0], b_data[1], b_data[2],
+             d_chi_1, d_chi_2, d_chi_3, d_theta};
 }
 
 //nu1, nu2, nu3, x, y, theta
@@ -135,7 +136,9 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
                     QVector<double> &theta_vec,
                     QVector<double> &N_symm_1, QVector<double> &N_symm_2, QVector<double> &N_symm_3,
-                    QVector<double> &b_symm_1, QVector<double> &b_symm_2, QVector<double> &b_symm_3)
+                    QVector<double> &b_symm_1, QVector<double> &b_symm_2, QVector<double> &b_symm_3,
+                    QVector<double> &d_chi_symm_1, QVector<double> &d_chi_symm_2, QVector<double> &d_chi_symm_3,
+                    QVector<double> &d_theta_symm)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
@@ -167,6 +170,10 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
     b_symm_1.append(N_res[5]);
     b_symm_2.append(-N_res[4]);
     b_symm_3.append(-N_res[3]);
+    d_chi_symm_1.append(N_res[6]);
+    d_chi_symm_2.append(N_res[7]);
+    d_chi_symm_3.append(N_res[8]);
+    d_theta_symm.append(N_res[9]);
 
 
     while (tl + h < t_right || last_flag)
@@ -247,6 +254,10 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
             b_symm_1.append(N_res[5]);
             b_symm_2.append(-N_res[4]);
             b_symm_3.append(-N_res[3]);
+            d_chi_symm_1.append(N_res[6]);
+            d_chi_symm_2.append(N_res[7]);
+            d_chi_symm_3.append(N_res[8]);
+            d_theta_symm.append(N_res[9]);
 
             coefmax = 5;
 
@@ -283,6 +294,10 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                 b_symm_1.append(N_res[5]);
                 b_symm_2.append(-N_res[4]);
                 b_symm_3.append(-N_res[3]);
+                d_chi_symm_1.append(N_res[6]);
+                d_chi_symm_2.append(N_res[7]);
+                d_chi_symm_3.append(N_res[8]);
+                d_theta_symm.append(N_res[9]);
 
                 coefmax = 5;
             }

@@ -58,6 +58,10 @@ private:
     QVector<double> b_1;
     QVector<double> b_2;
     QVector<double> b_3;
+    QVector<double> d_theta_symm;
+    QVector<double> d_chi_symm_1;
+    QVector<double> d_chi_symm_2;
+    QVector<double> d_chi_symm_3;
 
     QVector<double> v_sign_tau_1;
     QVector<double> v_sign_tau_2;

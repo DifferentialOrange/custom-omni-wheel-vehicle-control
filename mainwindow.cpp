@@ -28,6 +28,20 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+double max_abs(QVector<double> v) {
+    double v_max = *std::max_element(v.begin(), v.end());
+    double v_min = *std::min_element(v.begin(), v.end());
+    return std::max(std::abs(v_max), std::abs(v_min));
+}
+
+double max_abs(Vector<6> v) {
+    double max_1 = std::max(std::abs(v[0]),std::abs(v[1]));
+    double max_2 = std::max(std::abs(v[2]),std::abs(v[3]));
+    double max_3 = std::max(std::abs(v[4]),std::abs(v[5]));
+    double max_4 = std::max(max_1, max_2);
+    return std::max(max_4, max_3);
+}
+
 
 void MainWindow::on_pushButton_compute_clicked()
 {
@@ -99,9 +113,9 @@ void MainWindow::on_pushButton_compute_clicked()
     double x = -10;
     double y = 10;
     double theta = 1;
-    for (double v_1 = -50; v_1 < 50.1; v_1 += 5) {
-        for (double v_2 = -50; v_2 < 50.1; v_2 += 5) {
-            for (double v_theta = -3; v_theta < 3.1; v_theta += 0.1) {
+    for (double v_1 = -200; v_1 < 200.1; v_1 += 10) {
+        for (double v_2 = -200; v_2 < 200.1; v_2 += 10) {
+            for (double v_theta = -10; v_theta < 10.1; v_theta += 0.5) {
                 initial_values[0] = 0;
 
                 initial_values[1] = 0;
@@ -137,18 +151,30 @@ void MainWindow::on_pushButton_compute_clicked()
                                          t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                                          x_symm, y_symm, theta_symm,
                                          N_symm_1, N_symm_2, N_symm_3,
-                                         b_symm_1, b_symm_2, b_symm_3);
+                                         b_symm_1, b_symm_2, b_symm_3,
+                                         d_chi_symm_1, d_chi_symm_2, d_chi_symm_3,
+                                         d_theta_symm);
 
                 double N_min_1 = *std::min_element(N_symm_1.begin(), N_symm_1.end());
                 double N_min_2 = *std::min_element(N_symm_2.begin(), N_symm_2.end());
                 double N_min_3 = *std::min_element(N_symm_3.begin(), N_symm_3.end());
 
+                double d_chi_max_1 = max_abs(d_chi_symm_1);
+                double d_chi_max_2 = max_abs(d_chi_symm_2);
+                double d_chi_max_3 = max_abs(d_chi_symm_3);
+                double d_chi_max_p1 = std::max(d_chi_max_1, d_chi_max_2);
+                double d_chi_max = std::max(d_chi_max_p1, d_chi_max_3);
+
+                double d_theta_max = max_abs(d_theta_symm);
+
+                double U_max = max_abs(control);
+
                 if ((N_min_1 > 0) && (N_min_2 > 0) && (N_min_3 > 0)) {
+                    file << d_chi_max << ' ' << d_theta_max << ' ' << U_max << ' ' << "1" << '\n';
                     qDebug() << v_1 << ' ' << v_2 << ' ' << v_theta << ' ' << "1" << '\n';
-                    file << v_1 << ' ' << v_2 << ' ' << v_theta << ' ' << "1" << '\n';
                 } else {
+                    file << d_chi_max << ' ' << d_theta_max << ' ' << U_max << ' ' << "0" << '\n';
                     qDebug() << v_1 << ' ' << v_2 << ' ' << v_theta << ' ' << "0" << '\n';
-                    file << v_1 << ' ' << v_2 << ' ' << v_theta << ' ' << "0" << '\n';
                 }
 
                 t_symm.clear();
@@ -162,6 +188,11 @@ void MainWindow::on_pushButton_compute_clicked()
                 N_symm_1.clear();
                 N_symm_2.clear();
                 N_symm_3.clear();
+
+                d_chi_symm_1.clear();
+                d_chi_symm_2.clear();
+                d_chi_symm_3.clear();
+                d_theta_symm.clear();
     }}}
 
     file.close();

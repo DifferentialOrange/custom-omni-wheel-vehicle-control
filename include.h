@@ -36,7 +36,9 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
                     QVector<double> &theta_vec,
                     QVector<double> &N_symm_1, QVector<double> &N_symm_2, QVector<double> &N_symm_3,
-                    QVector<double> &b_symm_1, QVector<double> &b_symm_2, QVector<double> &b_symm_3);
+                    QVector<double> &b_symm_1, QVector<double> &b_symm_2, QVector<double> &b_symm_3,
+                    QVector<double> &d_chi_symm_1, QVector<double> &d_chi_symm_2, QVector<double> &d_chi_symm_3,
+                    QVector<double> &d_theta_symm);
 
 Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial_values,
                     Vector<3> control_minus, Vector<3> control_plus, double t_sw,
