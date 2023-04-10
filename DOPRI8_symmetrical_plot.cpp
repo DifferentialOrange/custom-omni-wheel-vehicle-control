@@ -7,26 +7,9 @@
 bool o_1 = false;
 bool o_2 = false;
 
-std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw)
+std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control)
 {
     double g = 9.81;
-    Vector<3> u;
-
-    if (t < t_sw) {
-        if (o_1 == false) {
-            qDebug() << "control_minus" << '\n';
-            qDebug() << control_minus[0] << '\n';
-            o_1 = true;
-        }
-        u = control_minus;
-    } else {
-        if (o_2 == false) {
-            qDebug() << "control_plus" << '\n';
-            qDebug() << control_plus[0] << '\n';
-            o_2 = true;
-        }
-        u = control_plus;
-    }
 
         //qDebug() << "u symm " << u[0] << " " << u[1] << " " << u[2] << '\n';
 
@@ -59,33 +42,33 @@ std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control_minus, 
     double s_13 = (- D * sin(b_1) + d_1 * cos(a_1 - b_1)) / L;
     double s_23 = (- D * sin(b_2) + d_2 * cos(a_2 - b_2)) / L;
     double s_33 = (- D * sin(b_3) + d_3 * cos(a_3 - b_3)) / L;
-    double d_chi_1 = s_11 * x[0] + s_12 * x[1] * s_13 * x[2];
-    double d_chi_2 = s_21 * x[0] + s_22 * x[1] * s_23 * x[2];
-    double d_chi_3 = s_31 * x[0] + s_32 * x[1] * s_33 * x[2];
-    double d_theta = x[2] * L;
+    double d_chi_1 = s_11 * x[0] + s_12 * x[1] + s_13 * x[2];
+    double d_chi_2 = s_21 * x[0] + s_22 * x[1] + s_23 * x[2];
+    double d_chi_3 = s_31 * x[0] + s_32 * x[1] + s_33 * x[2];
+    double d_theta = x[2] / L;
 
     double a_data[] = {1, 1, 1,
-                       parameters::symmetrical::Delta - parameters::symmetrical::delta[0] * sin(parameters::symmetrical::alpha[0]),
-                       parameters::symmetrical::Delta - parameters::symmetrical::delta[1] * sin(parameters::symmetrical::alpha[1]),
-                       parameters::symmetrical::Delta - parameters::symmetrical::delta[2] * sin(parameters::symmetrical::alpha[2]),
-                       parameters::symmetrical::delta[0] * cos(parameters::symmetrical::alpha[0]),
-                       parameters::symmetrical::delta[1] * cos(parameters::symmetrical::alpha[1]),
-                       parameters::symmetrical::delta[2] * cos(parameters::symmetrical::alpha[2])};
+                       - parameters::symmetrical::Delta + parameters::symmetrical::delta[0] * sin(parameters::symmetrical::alpha[0]),
+                       - parameters::symmetrical::Delta + parameters::symmetrical::delta[1] * sin(parameters::symmetrical::alpha[1]),
+                       - parameters::symmetrical::Delta + parameters::symmetrical::delta[2] * sin(parameters::symmetrical::alpha[2]),
+                       - parameters::symmetrical::delta[0] * cos(parameters::symmetrical::alpha[0]),
+                       - parameters::symmetrical::delta[1] * cos(parameters::symmetrical::alpha[1]),
+                       - parameters::symmetrical::delta[2] * cos(parameters::symmetrical::alpha[2])};
     double b_data[] = {g,
+                       - parameters::lambda * parameters::lambda * (
+                            d_chi_1 * d_theta * cos(parameters::symmetrical::beta[0]) +
+                            d_chi_2 * d_theta * cos(parameters::symmetrical::beta[1]) +
+                            d_chi_3 * d_theta * cos(parameters::symmetrical::beta[2])
+                       ) - sin(parameters::symmetrical::beta[0]) * (parameters::c1 * control[0] - parameters::c2 * d_chi_1) -
+                           sin(parameters::symmetrical::beta[1]) * (parameters::c1 * control[1] - parameters::c2 * d_chi_2) -
+                           sin(parameters::symmetrical::beta[2]) * (parameters::c1 * control[2] - parameters::c2 * d_chi_3),
                        parameters::lambda * parameters::lambda * (
                             d_chi_1 * d_theta * sin(parameters::symmetrical::beta[0]) +
                             d_chi_2 * d_theta * sin(parameters::symmetrical::beta[1]) +
                             d_chi_3 * d_theta * sin(parameters::symmetrical::beta[2])
-                       ) -  cos(parameters::symmetrical::beta[0]) * (parameters::c1 * u[0] - parameters::c2 * d_chi_1) -
-                            cos(parameters::symmetrical::beta[1]) * (parameters::c1 * u[1] - parameters::c2 * d_chi_2) -
-                            cos(parameters::symmetrical::beta[2]) * (parameters::c1 * u[2] - parameters::c2 * d_chi_3),
-                       parameters::lambda * parameters::lambda * (
-                            - d_chi_1 * d_theta * cos(parameters::symmetrical::beta[0]) -
-                            d_chi_2 * d_theta * cos(parameters::symmetrical::beta[1]) -
-                            d_chi_3 * d_theta * cos(parameters::symmetrical::beta[2])
-                       ) -  sin(parameters::symmetrical::beta[0]) * (parameters::c1 * u[0] - parameters::c2 * d_chi_1) -
-                       sin(parameters::symmetrical::beta[1]) * (parameters::c1 * u[1] - parameters::c2 * d_chi_2) -
-                       sin(parameters::symmetrical::beta[2]) * (parameters::c1 * u[2] - parameters::c2 * d_chi_3)
+                       ) - cos(parameters::symmetrical::beta[0]) * (parameters::c1 * control[0] - parameters::c2 * d_chi_1) -
+                           cos(parameters::symmetrical::beta[1]) * (parameters::c1 * control[1] - parameters::c2 * d_chi_2) -
+                           cos(parameters::symmetrical::beta[2]) * (parameters::c1 * control[2] - parameters::c2 * d_chi_3)
                       };
 
 
@@ -103,17 +86,9 @@ std::array<double, 6> compute_N(double t, Vector<6> x, Vector<3> control_minus, 
 
 //nu1, nu2, nu3, x, y, theta
 
-Vector<6> rightpart(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw)
+Vector<6> rightpart(double t, Vector<6> x, Vector<3> u)
 {
     Vector<6> rez;
-    Vector<3> u;
-
-
-    if (t < t_sw)
-        u = control_minus;
-    else
-        u = control_plus;
-
 
     rez[0] = (x[1] * x[2] / parameters::symmetrical::Lambda + parameters::c1 * (u[0] / 2 - u[1] + u[2] / 2)
             - 3 * parameters::c2 * x[0] / 2) / parameters::symmetrical::A1;
@@ -130,16 +105,14 @@ Vector<6> rightpart(double t, Vector<6> x, Vector<3> control_minus, Vector<3> co
 }
 
 Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initial_values,
-                    Vector<3> control_minus, Vector<3> control_plus, double t_sw,
+                    Vector<3> control,
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
                     QVector<double> &theta_vec,
-                    QVector<double> &N_symm_1, QVector<double> &N_symm_2, QVector<double> &N_symm_3,
-                    QVector<double> &b_symm_1, QVector<double> &b_symm_2, QVector<double> &b_symm_3)
+                    QVector<double> &N_symm_1, QVector<double> &N_symm_2, QVector<double> &N_symm_3)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
-    bool switch_flag = false;
     bool last_flag = false;
 
     double tl = t_left;
@@ -160,61 +133,53 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
     x_vec.append(xl[3]);
     y_vec.append(xl[4]);
     theta_vec.append(xl[5]);
-    auto N_res = compute_N(tl, xl, control_minus, control_plus, t_sw);
+    auto N_res = compute_N(tl, xl, control);
     N_symm_1.append(N_res[0]);
     N_symm_2.append(N_res[1]);
     N_symm_3.append(N_res[2]);
-    b_symm_1.append(N_res[5]);
-    b_symm_2.append(-N_res[4]);
-    b_symm_3.append(-N_res[3]);
 
 
     while (tl + h < t_right || last_flag)
     {
 
-        //switch point
-        if (tl < t_sw && tl + h > t_sw && !switch_flag)
-        {
-            h = t_sw - tl;
-            switch_flag = true;
-        }
 
-        k1 = rightpart(tl, xl, control_minus, control_plus, t_sw);
 
-        k2 = rightpart(tl + h / 18, xl + h * k1 / 18, control_minus, control_plus, t_sw);
+        k1 = rightpart(tl, xl, control);
 
-        k3 = rightpart(tl + h / 12, xl + h * (k1  / 48 + k2 / 16) , control_minus, control_plus, t_sw);
+        k2 = rightpart(tl + h / 18, xl + h * k1 / 18, control);
 
-        k4 = rightpart(tl + h / 8, xl + h * (k1  / 32 + k3 * 3 / 32) , control_minus, control_plus, t_sw);
+        k3 = rightpart(tl + h / 12, xl + h * (k1  / 48 + k2 / 16) , control);
 
-        k5 = rightpart(tl + h * 5 / 16, xl + h * (k1  * 5 / 16 + k3 * (-75) / 64 + k4 * 75 / 64) , control_minus, control_plus, t_sw);
+        k4 = rightpart(tl + h / 8, xl + h * (k1  / 32 + k3 * 3 / 32) , control);
 
-        k6 = rightpart(tl + h * 3 / 8, xl + h * (k1  * 3 / 80 + k4 * 3 / 16 + k5 * 3 / 20) , control_minus, control_plus, t_sw);
+        k5 = rightpart(tl + h * 5 / 16, xl + h * (k1  * 5 / 16 + k3 * (-75) / 64 + k4 * 75 / 64) , control);
+
+        k6 = rightpart(tl + h * 3 / 8, xl + h * (k1  * 3 / 80 + k4 * 3 / 16 + k5 * 3 / 20) , control);
 
         k7 = rightpart(tl + h * 59. / 400., xl + h * (k1  * (29443841. / 614563906.) + k4 * (77736538. / 692538347.) + k5 * ((-28693883.) / 1125000000.) + 
-                k6 * (23124283. / 1800000000.) ), control_minus, control_plus, t_sw);
+                k6 * (23124283. / 1800000000.) ), control);
 
         k8 = rightpart(tl + h * 93. / 200., xl + h * (k1  * (16016141. / 946692911.) + k4 * (61564180. / 158732637.) + k5 * (22789713. / 633445777.) + 
-                k6 * (545815736. / 2771057229.) + k7 * ((-180193667.) / 1043307555.) ), control_minus, control_plus, t_sw);
+                k6 * (545815736. / 2771057229.) + k7 * ((-180193667.) / 1043307555.) ), control);
 
         k9 = rightpart(tl + h * (5490023248. / 9719169821.), xl + h * (k1  * (39632708. / 573591083.) + k4 * ((-433636366.) / 683701615.) + k5 * ((-421739975.) / 2616292301.) +
-                k6 * (100302831. / 723423059.) + k7 * (790204164. / 839813087.) + k8 * (800635310. / 3783071287.) ), control_minus, control_plus, t_sw);
+                k6 * (100302831. / 723423059.) + k7 * (790204164. / 839813087.) + k8 * (800635310. / 3783071287.) ), control);
 
         k10 = rightpart(tl + h * 13 / 20, xl + h * (k1  * (246121993. / 1340847787.) + k4 * ((-37695042795.) / 15268766246.) + k5 * ((-309121744.) / 1061227803.) +
-                k6 * ((-12992083.) / 490766935.) + k7 * (6005943493. / 2108947869.) + k8 * (393006217. / 1396673457) + k9 * (123872331. / 1001029789.) ), control_minus, control_plus, t_sw);
+                k6 * ((-12992083.) / 490766935.) + k7 * (6005943493. / 2108947869.) + k8 * (393006217. / 1396673457) + k9 * (123872331. / 1001029789.) ), control);
 
         k11 = rightpart(tl + h * (1201146811. / 1299019798.), xl + h * (k1  * ((-1028468189.) / 846180014.) + k4 * (8478235783. / 508512852.) + k5 * (1311729495. / 1432422823.) +
                 k6 * ((-10304129995.) / 1701304382.) + k7 * ((-48777925059.) / 3047939560.) + k8 * (15336726248. / 1032824649.) + k9 * ((-45442868181.) / 3398467696.) + 
-                k10 * (3065993473. / 597172653.) ), control_minus, control_plus, t_sw);
+                k10 * (3065993473. / 597172653.) ), control);
 
         k12 = rightpart(tl + h, xl + h * (k1  * (185892177. / 718116043.) + k4 * ((-3185094517.) / 667107341.) + k5 * ((-477755414.) / 1098053517.) + 
                  k6 * ((-703635378.) / 230739211.) + k7 * (5731566787. / 1027545527.) + k8 * (5232866602. / 850066563.) + k9 * ((-4093664535.) / 808688257.) + 
-                k10 * (3962137247. / 1805957418.) + k11 * (65686358. / 487910083.) ), control_minus, control_plus, t_sw);
+                k10 * (3962137247. / 1805957418.) + k11 * (65686358. / 487910083.) ), control);
 
 
         k13 = rightpart(tl + h, xl + h * (k1  * (403863854. / 491063109.) + k4 * ((-5068492393.) / 434740067.) + k5 * ((-411421997.) / 543043805.) + 
                  k6 * (652783627. / 914296604.) + k7 * (11173962825. / 925320556.) + k8 * ((-13158990841.) / 6184727034.) + k9 * (3936647629. / 1978049680.) + 
-                k10 * ((-160528059.) / 685178525.) + k11 * (248638103. / 1413531060.) ), control_minus, control_plus, t_sw);
+                k10 * ((-160528059.) / 685178525.) + k11 * (248638103. / 1413531060.) ), control);
 
 
         stepx = h * (k1 * (14005451. / 335480064.) + k6 * ((-59238493.) / 1068277825.) + k7 * (181606767. / 758867731.) + k8 * (561292985. / 797845732.) + 
@@ -240,13 +205,10 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
             x_vec.append(xl[3]);
             y_vec.append(xl[4]);
             theta_vec.append(xl[5]);
-            auto N_res = compute_N(tl, xl, control_minus, control_plus, t_sw);
+            auto N_res = compute_N(tl, xl, control);
             N_symm_1.append(N_res[0]);
             N_symm_2.append(N_res[1]);
             N_symm_3.append(N_res[2]);
-            b_symm_1.append(N_res[5]);
-            b_symm_2.append(-N_res[4]);
-            b_symm_3.append(-N_res[3]);
 
             coefmax = 5;
 
@@ -276,13 +238,10 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                 x_vec.append(xl[3]);
                 y_vec.append(xl[4]);
                 theta_vec.append(xl[5]);
-                auto N_res = compute_N(tl, xl, control_minus, control_plus, t_sw);
+                auto N_res = compute_N(tl, xl, control);
                 N_symm_1.append(N_res[0]);
                 N_symm_2.append(N_res[1]);
                 N_symm_3.append(N_res[2]);
-                b_symm_1.append(N_res[5]);
-                b_symm_2.append(-N_res[4]);
-                b_symm_3.append(-N_res[3]);
 
                 coefmax = 5;
             }
