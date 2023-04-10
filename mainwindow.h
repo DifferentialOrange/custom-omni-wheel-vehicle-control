@@ -22,7 +22,6 @@ public:
 
 private slots:
     void on_pushButton_compute_clicked();
-    void on_pushButton_generate_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -66,7 +65,7 @@ private:
     QVector<double> v_sign_n_2;
     QVector<double> v_sign_n_3;
 
-    Vector<6> initial_values, final_values;
+    Vector<6> initial_values_1, initial_values_2;
     double t_sw, T;
 
     bool plotted;

@@ -31,12 +31,11 @@ Vector<6> custom_control_find(Vector<6> control, double t_sw, double T, Vector<6
                               Vector<6> final_values);
 
 Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initial_values,
-                    Vector<3> control_minus, Vector<3> control_plus, double t_sw,
+                    Vector<3> control,
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
                     QVector<double> &theta_vec,
-                    QVector<double> &N_symm_1, QVector<double> &N_symm_2, QVector<double> &N_symm_3,
-                    QVector<double> &b_symm_1, QVector<double> &b_symm_2, QVector<double> &b_symm_3);
+                    QVector<double> &N_symm_1, QVector<double> &N_symm_2, QVector<double> &N_symm_3);
 
 Vector<12> DOPRI8_friction_plot(double t_left, double t_right, Vector<6> initial_values,
                     Vector<3> control_minus, Vector<3> control_plus, double t_sw,

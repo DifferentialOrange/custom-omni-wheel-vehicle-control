@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1334</width>
-    <height>967</height>
+    <width>847</width>
+    <height>714</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -102,176 +102,20 @@
      <string>0</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_4">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>10</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>nu_1(T)</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_nu_1_T">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>40</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_5">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>80</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>nu_2(T)</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_nu_2_T">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>110</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_nu_3_T">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>180</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_6">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>150</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>nu_3(T)</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_7">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>10</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>x(T)</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_x_T">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>40</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>10</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_8">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>80</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>y(T)</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_y_T">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>110</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>10</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_theta_T">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>180</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>0</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_9">
-    <property name="geometry">
-     <rect>
-      <x>720</x>
-      <y>150</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>theta(T)</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_10">
     <property name="geometry">
      <rect>
-      <x>590</x>
-      <y>220</y>
+      <x>450</x>
+      <y>290</y>
       <width>67</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>T</string>
+     <string>t_2</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_t_sw">
+   <widget class="QLineEdit" name="lineEdit_t_1">
     <property name="geometry">
      <rect>
       <x>450</x>
@@ -294,14 +138,14 @@
      </rect>
     </property>
     <property name="text">
-     <string>t_sw</string>
+     <string>t_1</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_T">
+   <widget class="QLineEdit" name="lineEdit_t_2">
     <property name="geometry">
      <rect>
-      <x>590</x>
-      <y>250</y>
+      <x>450</x>
+      <y>320</y>
       <width>113</width>
       <height>25</height>
      </rect>
@@ -313,7 +157,7 @@
    <widget class="QPushButton" name="pushButton_compute">
     <property name="geometry">
      <rect>
-      <x>730</x>
+      <x>690</x>
       <y>320</y>
       <width>89</width>
       <height>25</height>
@@ -323,129 +167,170 @@
      <string>Compute</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton_generate">
-    <property name="geometry">
-     <rect>
-      <x>730</x>
-      <y>250</y>
-      <width>89</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Generate</string>
-    </property>
-   </widget>
-   <widget class="QCustomPlot" name="PlotWidget_speed_coef_tau" native="true">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>360</y>
-      <width>431</width>
-      <height>251</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_mu_n">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>320</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>0.001</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_mu_tau">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>320</y>
-      <width>113</width>
-      <height>25</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>0.9</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_12">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>290</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>mu_n</string>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_13">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>290</y>
-      <width>67</width>
-      <height>17</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>mu_tau</string>
-    </property>
-   </widget>
-   <widget class="QCustomPlot" name="PlotWidget_speed_coef_n" native="true">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>360</y>
-      <width>431</width>
-      <height>251</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QCustomPlot" name="PlotWidget_N" native="true">
-    <property name="geometry">
-     <rect>
-      <x>450</x>
-      <y>620</y>
-      <width>431</width>
-      <height>281</height>
-     </rect>
-    </property>
-   </widget>
    <widget class="QCustomPlot" name="PlotWidget_N_symm" native="true">
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>620</y>
+      <y>350</y>
       <width>431</width>
       <height>281</height>
      </rect>
     </property>
    </widget>
-   <widget class="QCustomPlot" name="PlotWidget_b" native="true">
+   <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>890</x>
-      <y>360</y>
-      <width>431</width>
-      <height>251</height>
+      <x>570</x>
+      <y>10</y>
+      <width>67</width>
+      <height>17</height>
      </rect>
     </property>
+    <property name="text">
+     <string>U_1_1</string>
+    </property>
    </widget>
-   <widget class="QCustomPlot" name="PlotWidget_b_symm" native="true">
+   <widget class="QLineEdit" name="lineEdit_U_1_1">
     <property name="geometry">
      <rect>
-      <x>890</x>
-      <y>620</y>
-      <width>431</width>
-      <height>281</height>
+      <x>570</x>
+      <y>40</y>
+      <width>113</width>
+      <height>25</height>
      </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>150</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>U_3_1</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_U_3_1">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>180</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_U_2_1">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>110</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>80</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>U_2_1</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_7">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>10</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>U_1_2</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_U_1_2">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>40</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_8">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>150</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>U_3_2</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_U_3_2">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>180</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_U_2_2">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>110</y>
+      <width>113</width>
+      <height>25</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>0</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_9">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>80</y>
+      <width>67</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>U_2_2</string>
     </property>
    </widget>
   </widget>
@@ -454,7 +339,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1334</width>
+     <width>847</width>
      <height>22</height>
     </rect>
    </property>
