@@ -136,11 +136,21 @@ void MainWindow::on_pushButton_compute_clicked()
                             3 * parameters::c2 * initial_values_2[0] / 2 - 3 * sqrt(3) * parameters::c2 * initial_values_2[1] /2 - \
                             g*parameters::symmetrical::rho) / parameters::c1;
 
-    qDebug() << "current velocity: > " << initial_values_2[0] << " " << initial_values_2[1] << " " << initial_values_2[2] << '\n';
+    qDebug() << "try    U_1 +   U_2 - 2 U_3 > " << bad_advice_1 << " for more fun result" << '\n';
+    qDebug() << "try    U_1 - 2 U_2 +   U_3 > " << bad_advice_2 << " for more fun result" << '\n';
+    qDebug() << "try -2 U_1 +   U_2 +   U_3 > " << bad_advice_3 << " for more fun result" << '\n';
 
-    qDebug() << "try U_1 + U_2 - 2 U_3 > " << bad_advice_1 << " for more fun result" << '\n';
-    qDebug() << "try U_1 - 2 U_2 + U_3 > " << bad_advice_2 << " for more fun result" << '\n';
-    qDebug() << "try -2 U_1 + U_2 + U_3 > " << bad_advice_3 << " for more fun result" << '\n';
+    double h = (1 + 3.0 * parameters::lambda * parameters::lambda / 2) * (initial_values_2[0] * initial_values_2[0] + initial_values_2[1] * initial_values_2[1]) +
+            (1 + 3.0 * parameters::symmetrical::rho * parameters::symmetrical::rho * parameters::lambda * parameters::lambda /
+             parameters::symmetrical::Lambda / parameters::symmetrical::Lambda) * initial_values_2[2] * initial_values_2[2];
+
+    double good_advice = g * parameters::symmetrical::rho / parameters::c1 / sqrt(6) -
+            (3 + sqrt(3)) * (parameters::lambda * parameters::lambda * h / sqrt(parameters::symmetrical::Lambda * parameters::symmetrical::Lambda +
+                                                                                3 * parameters::symmetrical::rho * parameters::symmetrical::rho *
+                                                                                parameters::lambda * parameters::lambda) +
+                             parameters::c2 * sqrt(h)) / 2 / parameters::c1 / sqrt(2 + 3 * parameters::lambda * parameters::lambda);
+
+    qDebug() << "keep U_1^2 + U_2^2 + U_3^2 < " << good_advice << " for satisfying result" << '\n';
 
 
     DOPRI8_symmetrical_plot (t_1, t_2, initial_values_2, control_2,
