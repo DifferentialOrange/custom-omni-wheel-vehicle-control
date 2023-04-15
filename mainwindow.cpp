@@ -95,6 +95,10 @@ void MainWindow::on_pushButton_compute_clicked()
         P_real.clear();
         P_advice.clear();
 
+        N_1.clear();
+        N_2.clear();
+        N_3.clear();
+
         t.clear();
         nu_1.clear();
         nu_2.clear();
@@ -114,12 +118,13 @@ void MainWindow::on_pushButton_compute_clicked()
                              {control[3], control[4], control[5]}, t_sw,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                              x_symm, y_symm, theta_symm,
-                             P_real, P_advice);
+                             P_real, P_advice, N_1, N_2, N_3);
 
     if (plotted)
     {
         ui->PlotWidget_trajectory->clearPlottables();
         ui->PlotWidget_P->clearPlottables();
+        ui->PlotWidget_N->clearPlottables();
     }
 
     ui->textBrowser_controls->setText("U_symm = " + QString::number(u_symm[0], 'g', 6)
@@ -180,14 +185,14 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_P->legend->setVisible(true);
 
     ui->PlotWidget_P->addGraph();
-    ui->PlotWidget_P->graph(0)->setData(t_symm, P_real);
-    ui->PlotWidget_P->graph(0)->setName("real");
-    ui->PlotWidget_P->graph(0)->setPen(QPen(Qt::green));
+    ui->PlotWidget_P->graph(0)->setData(t_symm, P_advice);
+    ui->PlotWidget_P->graph(0)->setName("advice");
+    ui->PlotWidget_P->graph(0)->setPen(QPen(Qt::red));
 
     ui->PlotWidget_P->addGraph();
-    ui->PlotWidget_P->graph(1)->setData(t_symm, P_advice);
-    ui->PlotWidget_P->graph(1)->setName("advice");
-    ui->PlotWidget_P->graph(1)->setPen(QPen(Qt::red));
+    ui->PlotWidget_P->graph(1)->setData(t_symm, P_real);
+    ui->PlotWidget_P->graph(1)->setName("real");
+    ui->PlotWidget_P->graph(1)->setPen(QPen(Qt::green));
 
     ui->PlotWidget_P->xAxis->setRange(0, T);
     ui->PlotWidget_P->yAxis->setRange(- 0.05, P_max + 0.05);
@@ -197,6 +202,52 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_P->replot();
 
     ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_"
+                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
+                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
+                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
+                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
+                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
+                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
+                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
+                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
+                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
+                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
+                                + ".pdf");
+
+    double N_max_1 = *std::max_element(N_1.begin(), N_1.end());
+    double N_max_2 = *std::max_element(N_2.begin(), N_2.end());
+    double N_max_3 = *std::max_element(N_3.begin(), N_3.end());
+    double N_min_1 = *std::min_element(N_1.begin(), N_1.end());
+    double N_min_2 = *std::min_element(N_2.begin(), N_2.end());
+    double N_min_3 = *std::min_element(N_3.begin(), N_3.end());
+    double N_max = std::max(std::max(N_max_1, N_max_2), N_max_3);
+    double N_min = std::min(std::min(N_min_1, N_min_2), N_min_3);
+
+    ui->PlotWidget_N->legend->setVisible(true);
+
+    ui->PlotWidget_N->addGraph();
+    ui->PlotWidget_N->graph(0)->setData(t_symm, N_1);
+    ui->PlotWidget_N->graph(0)->setName("N_1");
+    ui->PlotWidget_N->graph(0)->setPen(QPen(Qt::blue));
+
+    ui->PlotWidget_N->addGraph();
+    ui->PlotWidget_N->graph(1)->setData(t_symm, N_2);
+    ui->PlotWidget_N->graph(1)->setName("N_2");
+    ui->PlotWidget_N->graph(1)->setPen(QPen(Qt::magenta));
+
+    ui->PlotWidget_N->addGraph();
+    ui->PlotWidget_N->graph(2)->setData(t_symm, N_3);
+    ui->PlotWidget_N->graph(2)->setName("N_3");
+    ui->PlotWidget_N->graph(2)->setPen(QPen(Qt::cyan));
+
+    ui->PlotWidget_N->xAxis->setRange(0, T);
+    ui->PlotWidget_N->yAxis->setRange(N_min - 0.05, N_max + 0.05);
+    ui->PlotWidget_N->xAxis->setLabel("t");
+    ui->PlotWidget_N->yAxis->setLabel("N");
+    ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_N->replot();
+
+    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_"
                                 + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
                                 + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
                                 + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)

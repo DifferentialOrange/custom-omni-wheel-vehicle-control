@@ -47,6 +47,7 @@ private:
     double t_sw, T;
 
     QVector<double> P_real, P_advice;
+    QVector<double> N_1, N_2, N_3;
 
     bool plotted;
     QCPCurve *trajectory_minus_symm;
