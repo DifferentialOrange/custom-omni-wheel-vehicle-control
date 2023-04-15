@@ -31,11 +31,38 @@ Vector<6> rightpart(double t, Vector<6> x, Vector<3> control_minus, Vector<3> co
     return rez;
 }
 
+void compute_P(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw, QVector<double> &P_real, QVector<double> &P_advice)
+{
+    Vector<3> u;
+
+    if (t < t_sw)
+        u = control_minus;
+    else
+        u = control_plus;
+
+    P_real.append(u[0] * u[0] + u[1] * u[1] + u[2] * u[2]);
+
+    double g = 9.81;
+
+    double h = (1 + 3.0 * parameters::lambda * parameters::lambda / 2) * (x[0] * x[0] + x[1] * x[1]) +
+            (1 + 3.0 * parameters::symmetrical::rho * parameters::symmetrical::rho * parameters::lambda * parameters::lambda /
+             parameters::symmetrical::Lambda / parameters::symmetrical::Lambda) * x[2] * x[2];
+
+    double good_advice = g * parameters::symmetrical::rho / parameters::c1 / sqrt(6) -
+                (3 + sqrt(3)) * (parameters::lambda * parameters::lambda * h / sqrt(parameters::symmetrical::Lambda * parameters::symmetrical::Lambda +
+                                                                                    3 * parameters::symmetrical::rho * parameters::symmetrical::rho *
+                                                                                    parameters::lambda * parameters::lambda) +
+                                 parameters::c2 * sqrt(h)) / 2 / parameters::c1 / sqrt(2 + 3 * parameters::lambda * parameters::lambda);
+
+    P_advice.append(good_advice);
+}
+
 Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initial_values,
                     Vector<3> control_minus, Vector<3> control_plus, double t_sw,
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
-                    QVector<double> &theta_vec)
+                    QVector<double> &theta_vec,
+                    QVector<double> &P_real, QVector<double> &P_advice)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
@@ -60,7 +87,7 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
     x_vec.append(xl[3]);
     y_vec.append(xl[4]);
     theta_vec.append(xl[5]);
-
+    compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice);
 
     while (tl + h < t_right || last_flag)
     {
@@ -104,15 +131,12 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                  k6 * ((-703635378.) / 230739211.) + k7 * (5731566787. / 1027545527.) + k8 * (5232866602. / 850066563.) + k9 * ((-4093664535.) / 808688257.) + 
                 k10 * (3962137247. / 1805957418.) + k11 * (65686358. / 487910083.) ), control_minus, control_plus, t_sw);
 
-
         k13 = rightpart(tl + h, xl + h * (k1  * (403863854. / 491063109.) + k4 * ((-5068492393.) / 434740067.) + k5 * ((-411421997.) / 543043805.) + 
                  k6 * (652783627. / 914296604.) + k7 * (11173962825. / 925320556.) + k8 * ((-13158990841.) / 6184727034.) + k9 * (3936647629. / 1978049680.) + 
                 k10 * ((-160528059.) / 685178525.) + k11 * (248638103. / 1413531060.) ), control_minus, control_plus, t_sw);
 
-
         stepx = h * (k1 * (14005451. / 335480064.) + k6 * ((-59238493.) / 1068277825.) + k7 * (181606767. / 758867731.) + k8 * (561292985. / 797845732.) + 
                 k9 * ((-1041891430.) / 1371343529.) + k10 * (760417239. / 1151165299.) + k11 * (118820643. / 751138087.) + k12 * ((-528747749.) / 2220607170.) + k13 / 4 );
-
 
         errx = h * (k1 * (13451932. / 455176623.) + k6 * ((-808719846.) / 976000145.) + k7 * (1757004468. / 5645159321.) + k8 * (656045339. / 265891186.) + 
                 k9 * ((-3867574721.) / 1518517206.) + k10 * (465885868. / 322736535.) + k11 * (53011238. / 667516719.) + k12 * 2 / 45 );
@@ -133,6 +157,7 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
             x_vec.append(xl[3]);
             y_vec.append(xl[4]);
             theta_vec.append(xl[5]);
+            compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice);
 
             coefmax = 5;
 
@@ -162,6 +187,7 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                 x_vec.append(xl[3]);
                 y_vec.append(xl[4]);
                 theta_vec.append(xl[5]);
+                compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice);
 
                 coefmax = 5;
             }

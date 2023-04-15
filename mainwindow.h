@@ -46,6 +46,8 @@ private:
     Vector<6> initial_values, final_values;
     double t_sw, T;
 
+    QVector<double> P_real, P_advice;
+
     bool plotted;
     QCPCurve *trajectory_minus_symm;
     QCPCurve *trajectory_plus_symm;
