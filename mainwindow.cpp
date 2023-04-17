@@ -12,14 +12,14 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_nu_1_0->setText("0");
     ui->lineEdit_nu_2_0->setText("0");
     ui->lineEdit_nu_3_0->setText("0");
-    ui->lineEdit_nu_1_T->setText("0");
-    ui->lineEdit_nu_2_T->setText("0");
-    ui->lineEdit_nu_3_T->setText("0");
-    ui->lineEdit_x_T->setText("10");
-    ui->lineEdit_y_T->setText("10");
-    ui->lineEdit_theta_T->setText("0");
-    ui->lineEdit_t_sw->setText("5");
-    ui->lineEdit_T->setText("10");
+//    ui->lineEdit_t_1->setText("5");
+//    ui->lineEdit_t_2->setText("10");
+//    ui->lineEdit_U_1_1->setText("80");
+//    ui->lineEdit_U_2_1->setText("80");
+//    ui->lineEdit_U_3_1->setText("-70");
+//    ui->lineEdit_U_1_2->setText("0");
+//    ui->lineEdit_U_2_2->setText("0");
+//    ui->lineEdit_U_3_2->setText("0");
 }
 
 MainWindow::~MainWindow()
@@ -50,27 +50,29 @@ void MainWindow::on_pushButton_compute_clicked()
 
     initial_values[5] = 0;
 
-    final_values[0] = ui->lineEdit_nu_1_T->text().toDouble(&ok);
+    Vector<3> control_1, control_2;
+
+    control_1[0] = ui->lineEdit_U_1_m->text().toDouble(&ok);
     if (!ok)
         return;
 
-    final_values[1] = ui->lineEdit_nu_2_T->text().toDouble(&ok);
+    control_1[1] = ui->lineEdit_U_2_m->text().toDouble(&ok);
     if (!ok)
         return;
 
-    final_values[2] = ui->lineEdit_nu_3_T->text().toDouble(&ok);
+    control_1[2] = ui->lineEdit_U_3_m->text().toDouble(&ok);
     if (!ok)
         return;
 
-    final_values[3] = ui->lineEdit_x_T->text().toDouble(&ok);
+    control_2[0] = ui->lineEdit_U_1_p->text().toDouble(&ok);
     if (!ok)
         return;
 
-    final_values[4] = ui->lineEdit_y_T->text().toDouble(&ok);
+    control_2[1] = ui->lineEdit_U_2_p->text().toDouble(&ok);
     if (!ok)
         return;
 
-    final_values[5] = ui->lineEdit_theta_T->text().toDouble(&ok);
+    control_2[2] = ui->lineEdit_U_3_p->text().toDouble(&ok);
     if (!ok)
         return;
 
@@ -108,14 +110,8 @@ void MainWindow::on_pushButton_compute_clicked()
         theta.clear();
     }
 
-    Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
-            initial_values[1], final_values[1], initial_values[2], final_values[2],
-            final_values[3], final_values[4], final_values[5]);
-
-    Vector<6> u_symm = control;
-
-    DOPRI8_symmetrical_plot (0, T, initial_values, {control[0], control[1], control[2]},
-                             {control[3], control[4], control[5]}, t_sw,
+    DOPRI8_symmetrical_plot (0, T, initial_values, control_1,
+                             control_2, t_sw,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                              x_symm, y_symm, theta_symm,
                              P_real, P_advice, N_1, N_2, N_3);
@@ -126,11 +122,6 @@ void MainWindow::on_pushButton_compute_clicked()
         ui->PlotWidget_P->clearPlottables();
         ui->PlotWidget_N->clearPlottables();
     }
-
-    ui->textBrowser_controls->setText("U_symm = " + QString::number(u_symm[0], 'g', 6)
-            + " " + QString::number(u_symm[1], 'g', 6) + " " + QString::number(u_symm[2], 'g', 6)
-            + " " + QString::number(u_symm[3], 'g', 6) + " " + QString::number(u_symm[4], 'g', 6)
-            + " " + QString::number(u_symm[5], 'g', 6));
 
     trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
     trajectory_plus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
@@ -143,14 +134,38 @@ void MainWindow::on_pushButton_compute_clicked()
     trajectory_plus_symm->setPen(pen_plus_symm);
 
     int i = 0;
+    int i_boundary;
     for (i = 0; t_symm[i] < t_sw; i++)
         data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+
+    i_boundary = i;
 
     for (; i < x_symm.length(); i++)
         data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
 
     trajectory_minus_symm->data()->set(data_minus_symm, true);
     trajectory_plus_symm->data()->set(data_plus_symm, true);
+
+    double g = 9.81;
+    double bad_advice_1 = (-3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
+                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
+                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
+                            3 * parameters::c2 * nu_1_symm[i_boundary] / 2 + 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
+                            g*parameters::symmetrical::rho) / parameters::c1;
+
+    double bad_advice_2 = (3 * parameters::lambda * parameters::lambda / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] + \
+                            3 * parameters::c2 * nu_1_symm[i_boundary] - \
+                            g*parameters::symmetrical::rho) / parameters::c1;
+
+    double bad_advice_3 = (3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
+                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
+                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
+                            3 * parameters::c2 * nu_1_symm[0] / 2 - 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
+                            g*parameters::symmetrical::rho) / parameters::c1;
+
+    qDebug() << "try U_1_plus + U_2_plus - 2 U_3_plus > " << bad_advice_1 << " for more fun result" << '\n';
+    qDebug() << "try U_1_plus - 2 U_2_plus + U_3_plus > " << bad_advice_2 << " for more fun result" << '\n';
+    qDebug() << "try -2 U_1_plus + U_2_plus + U_3_plus > " << bad_advice_3 << " for more fun result" << '\n';
 
     double x_max = *std::max_element(x_symm.begin(), x_symm.end());
     double x_min = *std::min_element(x_symm.begin(), x_symm.end());
@@ -286,15 +301,15 @@ void MainWindow::on_pushButton_generate_clicked()
         ui->lineEdit_t_sw->setText(QString::number(t_1));
     }
 
-    ui->lineEdit_nu_1_0->setText(QString::number(nu_1_2(gen)));
-    ui->lineEdit_nu_2_0->setText(QString::number(nu_1_2(gen)));
-    ui->lineEdit_nu_1_T->setText(QString::number(nu_1_2(gen)));
-    ui->lineEdit_nu_2_T->setText(QString::number(nu_1_2(gen)));
+//    ui->lineEdit_nu_1_0->setText(QString::number(nu_1_2(gen)));
+//    ui->lineEdit_nu_2_0->setText(QString::number(nu_1_2(gen)));
+//    ui->lineEdit_nu_1_T->setText(QString::number(nu_1_2(gen)));
+//    ui->lineEdit_nu_2_T->setText(QString::number(nu_1_2(gen)));
 
-    ui->lineEdit_nu_3_0->setText(QString::number(nu_3(gen)));
-    ui->lineEdit_nu_3_T->setText(QString::number(nu_3(gen)));
+//    ui->lineEdit_nu_3_0->setText(QString::number(nu_3(gen)));
+//    ui->lineEdit_nu_3_T->setText(QString::number(nu_3(gen)));
 
-    ui->lineEdit_x_T->setText(QString::number(x_y(gen)));
-    ui->lineEdit_y_T->setText(QString::number(x_y(gen)));
-    ui->lineEdit_theta_T->setText(QString::number(theta(gen)));
+//    ui->lineEdit_x_T->setText(QString::number(x_y(gen)));
+//    ui->lineEdit_y_T->setText(QString::number(x_y(gen)));
+//    ui->lineEdit_theta_T->setText(QString::number(theta(gen)));
 }

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>932</width>
+    <width>1259</width>
     <height>826</height>
    </rect>
   </property>
@@ -107,15 +107,15 @@
      <rect>
       <x>590</x>
       <y>10</y>
-      <width>67</width>
+      <width>81</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>nu_1(T)</string>
+     <string>U_1_minus</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_nu_1_T">
+   <widget class="QLineEdit" name="lineEdit_U_1_m">
     <property name="geometry">
      <rect>
       <x>590</x>
@@ -133,15 +133,15 @@
      <rect>
       <x>590</x>
       <y>80</y>
-      <width>67</width>
+      <width>81</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>nu_2(T)</string>
+     <string>U_2_minus</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_nu_2_T">
+   <widget class="QLineEdit" name="lineEdit_U_2_m">
     <property name="geometry">
      <rect>
       <x>590</x>
@@ -154,7 +154,7 @@
      <string>0</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_nu_3_T">
+   <widget class="QLineEdit" name="lineEdit_U_3_m">
     <property name="geometry">
      <rect>
       <x>590</x>
@@ -172,12 +172,12 @@
      <rect>
       <x>590</x>
       <y>150</y>
-      <width>67</width>
+      <width>81</width>
       <height>17</height>
      </rect>
     </property>
     <property name="text">
-     <string>nu_3(T)</string>
+     <string>U_3_minus</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_7">
@@ -190,10 +190,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>x(T)</string>
+     <string>U_1_plus</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_x_T">
+   <widget class="QLineEdit" name="lineEdit_U_1_p">
     <property name="geometry">
      <rect>
       <x>720</x>
@@ -216,10 +216,10 @@
      </rect>
     </property>
     <property name="text">
-     <string>y(T)</string>
+     <string>U_2_plus</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_y_T">
+   <widget class="QLineEdit" name="lineEdit_U_2_p">
     <property name="geometry">
      <rect>
       <x>720</x>
@@ -232,7 +232,7 @@
      <string>10</string>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_theta_T">
+   <widget class="QLineEdit" name="lineEdit_U_3_p">
     <property name="geometry">
      <rect>
       <x>720</x>
@@ -255,7 +255,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>theta(T)</string>
+     <string>U_3_plus</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_10">
@@ -372,7 +372,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>932</width>
+     <width>1259</width>
      <height>22</height>
     </rect>
    </property>
