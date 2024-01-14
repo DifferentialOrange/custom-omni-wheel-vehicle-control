@@ -24,7 +24,6 @@ double DOPRI8_par_integrate(double t_left, double t_right, std::function<double(
 
     double k1, /*k2, k3, k4, k5,*/ k6, k7, k8, k9, k10, k11, k12, k13;
 
-
     while (tl + h < t_right || last_flag)
     {
 

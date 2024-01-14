@@ -9,9 +9,12 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->lineEdit_nu_1_0->setText("0");
-    ui->lineEdit_nu_2_0->setText("0");
-    ui->lineEdit_nu_3_0->setText("0");
+    ui->lineEdit_N_1->setText("0.1");
+    ui->lineEdit_N_2->setText("0.25");
+
+//    ui->lineEdit_nu_1_0->setText("0");
+//    ui->lineEdit_nu_2_0->setText("0");
+//    ui->lineEdit_nu_3_0->setText("0");
 //    ui->lineEdit_t_1->setText("5");
 //    ui->lineEdit_t_2->setText("10");
 //    ui->lineEdit_U_1_1->setText("80");
@@ -32,56 +35,16 @@ void MainWindow::on_pushButton_compute_clicked()
 {
     bool ok;
 
-    initial_values[0] = ui->lineEdit_nu_1_0->text().toDouble(&ok);
+    double thetaN_1 = ui->lineEdit_N_1->text().toDouble(&ok);
     if (!ok)
         return;
 
-    initial_values[1] = ui->lineEdit_nu_2_0->text().toDouble(&ok);
+    double thetaN_2 = ui->lineEdit_N_2->text().toDouble(&ok);
     if (!ok)
         return;
 
-    initial_values[2] = ui->lineEdit_nu_3_0->text().toDouble(&ok);
+    double T = ui->lineEdit_T->text().toDouble(&ok);
     if (!ok)
-        return;
-
-    initial_values[3] = 0;
-
-    initial_values[4] = 0;
-
-    initial_values[5] = 0;
-
-    Vector<3> control_1, control_2;
-
-    control_1[0] = ui->lineEdit_U_1_m->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_1[1] = ui->lineEdit_U_2_m->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_1[2] = ui->lineEdit_U_3_m->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_2[0] = ui->lineEdit_U_1_p->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_2[1] = ui->lineEdit_U_2_p->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_2[2] = ui->lineEdit_U_3_p->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    t_sw = ui->lineEdit_t_sw->text().toDouble(&ok);
-    if (!ok || t_sw <= 0)
-        return;
-
-    T = ui->lineEdit_T->text().toDouble(&ok);
-    if (!ok || T <= t_sw)
         return;
 
     if (plotted)
@@ -110,8 +73,7 @@ void MainWindow::on_pushButton_compute_clicked()
         theta.clear();
     }
 
-    DOPRI8_symmetrical_plot (0, T, initial_values, control_1,
-                             control_2, t_sw,
+    DOPRI8_symmetrical_plot (0, T, thetaN_1, thetaN_2,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                              x_symm, y_symm, theta_symm,
                              P_real, P_advice, N_1, N_2, N_3);
@@ -134,38 +96,33 @@ void MainWindow::on_pushButton_compute_clicked()
     trajectory_plus_symm->setPen(pen_plus_symm);
 
     int i = 0;
-    int i_boundary;
-    for (i = 0; t_symm[i] < t_sw; i++)
-        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
-
-    i_boundary = i;
-
-    for (; i < x_symm.length(); i++)
+//    int i_boundary;
+    for (i = 0; i < x_symm.length(); i++)
         data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
 
-    trajectory_minus_symm->data()->set(data_minus_symm, true);
+//    trajectory_minus_symm->data()->set(data_minus_symm, true);
     trajectory_plus_symm->data()->set(data_plus_symm, true);
 
-    double g = 9.81;
-    double bad_advice_1 = (-3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
-                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                            3 * parameters::c2 * nu_1_symm[i_boundary] / 2 + 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
-                            g*parameters::symmetrical::rho) / parameters::c1;
+//    double g = 9.81;
+//    double bad_advice_1 = (-3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
+//                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                            3 * parameters::c2 * nu_1_symm[i_boundary] / 2 + 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
+//                            g*parameters::symmetrical::rho) / parameters::c1;
 
-    double bad_advice_2 = (3 * parameters::lambda * parameters::lambda / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] + \
-                            3 * parameters::c2 * nu_1_symm[i_boundary] - \
-                            g*parameters::symmetrical::rho) / parameters::c1;
+//    double bad_advice_2 = (3 * parameters::lambda * parameters::lambda / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] + \
+//                            3 * parameters::c2 * nu_1_symm[i_boundary] - \
+//                            g*parameters::symmetrical::rho) / parameters::c1;
 
-    double bad_advice_3 = (3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
-                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                            3 * parameters::c2 * nu_1_symm[0] / 2 - 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
-                            g*parameters::symmetrical::rho) / parameters::c1;
+//    double bad_advice_3 = (3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
+//                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                            3 * parameters::c2 * nu_1_symm[0] / 2 - 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
+//                            g*parameters::symmetrical::rho) / parameters::c1;
 
-    qDebug() << "try U_1_plus + U_2_plus - 2 U_3_plus > " << bad_advice_1 << " for more fun result" << '\n';
-    qDebug() << "try U_1_plus - 2 U_2_plus + U_3_plus > " << bad_advice_2 << " for more fun result" << '\n';
-    qDebug() << "try -2 U_1_plus + U_2_plus + U_3_plus > " << bad_advice_3 << " for more fun result" << '\n';
+//    qDebug() << "try U_1_plus + U_2_plus - 2 U_3_plus > " << bad_advice_1 << " for more fun result" << '\n';
+//    qDebug() << "try U_1_plus - 2 U_2_plus + U_3_plus > " << bad_advice_2 << " for more fun result" << '\n';
+//    qDebug() << "try -2 U_1_plus + U_2_plus + U_3_plus > " << bad_advice_3 << " for more fun result" << '\n';
 
     double x_max = *std::max_element(x_symm.begin(), x_symm.end());
     double x_min = *std::min_element(x_symm.begin(), x_symm.end());
@@ -276,40 +233,4 @@ void MainWindow::on_pushButton_compute_clicked()
                                 + ".pdf");
 
     plotted = true;
-}
-
-void MainWindow::on_pushButton_generate_clicked()
-{
-    std::random_device rd;  //Will be used to obtain a seed for the random number engine
-    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> nu_1_2(1.0, -1.0);
-    std::uniform_real_distribution<> nu_3(0.2, -0.2);
-    std::uniform_real_distribution<> x_y(-50, 50);
-    std::uniform_real_distribution<> theta(- 4 * M_PI, 4 * M_PI);
-    std::uniform_real_distribution<> time(1, 50);
-
-    double t_1 = time(gen), t_2 = time(gen);
-
-    if (t_1 > t_2)
-    {
-        ui->lineEdit_T->setText(QString::number(t_1));
-        ui->lineEdit_t_sw->setText(QString::number(t_2));
-    }
-    else
-    {
-        ui->lineEdit_T->setText(QString::number(t_2));
-        ui->lineEdit_t_sw->setText(QString::number(t_1));
-    }
-
-//    ui->lineEdit_nu_1_0->setText(QString::number(nu_1_2(gen)));
-//    ui->lineEdit_nu_2_0->setText(QString::number(nu_1_2(gen)));
-//    ui->lineEdit_nu_1_T->setText(QString::number(nu_1_2(gen)));
-//    ui->lineEdit_nu_2_T->setText(QString::number(nu_1_2(gen)));
-
-//    ui->lineEdit_nu_3_0->setText(QString::number(nu_3(gen)));
-//    ui->lineEdit_nu_3_T->setText(QString::number(nu_3(gen)));
-
-//    ui->lineEdit_x_T->setText(QString::number(x_y(gen)));
-//    ui->lineEdit_y_T->setText(QString::number(x_y(gen)));
-//    ui->lineEdit_theta_T->setText(QString::number(theta(gen)));
 }

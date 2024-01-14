@@ -22,7 +22,6 @@ public:
 
 private slots:
     void on_pushButton_compute_clicked();
-    void on_pushButton_generate_clicked();
 
 private:
     Ui::MainWindow *ui;
