@@ -192,25 +192,33 @@ void MainWindow::on_pushButton_compute_clicked()
                                 + "_y_T_" + QString::number(final_values[4], 'g', 4)
                                 + "_theta_T_" + QString::number(final_values[5], 'g', 4)
                                 + ".pdf");
+    qDebug() << "PlotWidget_trajectory" << "\n";
 
     double P_max_1 = *std::max_element(P_real.begin(), P_real.end());
     double P_max_2 = *std::max_element(P_advice.begin(), P_advice.end());
     double P_max = std::max(P_max_1, P_max_2);
 
+    double P_min_1 = *std::min_element(P_real.begin(), P_real.end());
+    double P_min_2 = *std::min_element(P_advice.begin(), P_advice.end());
+    double P_min = std::min(P_min_1, P_min_2);
+
     ui->PlotWidget_P->legend->setVisible(true);
+
+    QPen pen_advice(Qt::green);
+    pen_advice.setStyle(Qt::DashLine);
 
     ui->PlotWidget_P->addGraph();
     ui->PlotWidget_P->graph(0)->setData(t_symm, P_advice);
     ui->PlotWidget_P->graph(0)->setName("advice");
-    ui->PlotWidget_P->graph(0)->setPen(QPen(Qt::red));
+    ui->PlotWidget_P->graph(0)->setPen(pen_advice);
 
     ui->PlotWidget_P->addGraph();
     ui->PlotWidget_P->graph(1)->setData(t_symm, P_real);
     ui->PlotWidget_P->graph(1)->setName("real");
-    ui->PlotWidget_P->graph(1)->setPen(QPen(Qt::green));
+    ui->PlotWidget_P->graph(1)->setPen(QPen(Qt::red));
 
-    ui->PlotWidget_P->xAxis->setRange(0, T);
-    ui->PlotWidget_P->yAxis->setRange(- 0.05, P_max + 0.05);
+    ui->PlotWidget_P->xAxis->setRange(0, t_symm.last());
+    ui->PlotWidget_P->yAxis->setRange(- 0.05 + P_min, P_max + 0.05);
     ui->PlotWidget_P->xAxis->setLabel("t");
     ui->PlotWidget_P->yAxis->setLabel("P");
     ui->PlotWidget_P->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
@@ -255,7 +263,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->graph(2)->setName("N_3");
     ui->PlotWidget_N->graph(2)->setPen(QPen(Qt::cyan));
 
-    ui->PlotWidget_N->xAxis->setRange(0, T);
+    ui->PlotWidget_N->xAxis->setRange(0, t_symm.last());
     ui->PlotWidget_N->yAxis->setRange(N_min - 0.05, N_max + 0.05);
     ui->PlotWidget_N->xAxis->setLabel("t");
     ui->PlotWidget_N->yAxis->setLabel("N");

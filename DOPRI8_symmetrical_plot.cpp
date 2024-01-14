@@ -46,15 +46,22 @@ void compute_P(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control
 
     double g = 9.81;
 
-    double h = (1 + 3.0 * parameters::lambda * parameters::lambda / 2) * (x[0] * x[0] + x[1] * x[1]) +
-            (1 + 3.0 * parameters::symmetrical::rho * parameters::symmetrical::rho * parameters::lambda * parameters::lambda /
-             parameters::symmetrical::Lambda / parameters::symmetrical::Lambda) * x[2] * x[2];
+//    double h = (1 + 3.0 * parameters::lambda * parameters::lambda / 2) * (x[0] * x[0] + x[1] * x[1]) +
+//            (1 + 3.0 * parameters::symmetrical::rho * parameters::symmetrical::rho * parameters::lambda * parameters::lambda /
+//             parameters::symmetrical::Lambda / parameters::symmetrical::Lambda) * x[2] * x[2];
 
-    double good_advice = g * parameters::symmetrical::rho / parameters::c1 / sqrt(6) -
-                (3 + sqrt(3)) * (parameters::lambda * parameters::lambda * h / sqrt(parameters::symmetrical::Lambda * parameters::symmetrical::Lambda +
-                                                                                    3 * parameters::symmetrical::rho * parameters::symmetrical::rho *
-                                                                                    parameters::lambda * parameters::lambda) +
-                                 parameters::c2 * sqrt(h)) / 2 / parameters::c1 / sqrt(2 + 3 * parameters::lambda * parameters::lambda);
+    double v_S = sqrt(x[0] * x[0] + x[1] * x[1]);
+
+//    double good_advice = g * parameters::symmetrical::rho / parameters::c1 / sqrt(6) -
+//                (3 + sqrt(3)) * (parameters::lambda * parameters::lambda * h / sqrt(parameters::symmetrical::Lambda * parameters::symmetrical::Lambda +
+//                                                                                    3 * parameters::symmetrical::rho * parameters::symmetrical::rho *
+//                                                                                    parameters::lambda * parameters::lambda) +
+//                                 parameters::c2 * sqrt(h)) / 2 / parameters::c1 / sqrt(2 + 3 * parameters::lambda * parameters::lambda);
+    double good_advice = sqrt(6) * g * parameters::symmetrical::rho * (3 * parameters::lambda * parameters::lambda + 2) /
+                            (6 * parameters::c1 * (3 * parameters::lambda * parameters::lambda + 2 * 1)) -
+                            sqrt(6) * sqrt(parameters::lambda * parameters::lambda * parameters::lambda * parameters::lambda *
+                                           x[2] * x[2] + parameters::c2 * parameters::c2) * v_S / 2 / parameters::c1;
+
 
     P_advice.append(good_advice);
 }
