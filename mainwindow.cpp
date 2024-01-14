@@ -9,9 +9,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->lineEdit_nu_1_0->setText("0");
-    ui->lineEdit_nu_2_0->setText("0");
-    ui->lineEdit_nu_3_0->setText("0");
+    ui->lineEdit_N_1->setText("0.1");
+    ui->lineEdit_N_2->setText("0.21");
+    ui->lineEdit_T->setText("20");
+
+//    ui->lineEdit_nu_1_0->setText("0");
+//    ui->lineEdit_nu_2_0->setText("0");
+//    ui->lineEdit_nu_3_0->setText("0");
 //    ui->lineEdit_t_1->setText("5");
 //    ui->lineEdit_t_2->setText("10");
 //    ui->lineEdit_U_1_1->setText("80");
@@ -27,61 +31,87 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+const double program_R = 2;
+
+Vector<2> get_program_nu3_coeff(double thetaN_1, double thetaN_2) {
+    Vector<2> res;
+
+    res[0] = 2 * M_PI * parameters::symmetrical::L * (thetaN_2 - 2 * thetaN_1);
+    res[1] = 2 * M_PI * parameters::symmetrical::L * (2 * thetaN_1 - thetaN_2 / 2);
+//    res[0] = 0;
+//    res[1] = 2 * M_PI * parameters::symmetrical::L * thetaN_1;
+
+    return res;
+}
+
+Vector<3> get_expected_nu(double t, double thetaN_1, double thetaN_2) {
+    Vector<3> res;
+
+    auto nu_coeff = get_program_nu3_coeff(thetaN_1, thetaN_2);
+
+    res[0] = 0;
+    res[2] = nu_coeff[0] * t + nu_coeff[1];
+    res[1] = program_R * res[2] / parameters::symmetrical::L;
+
+    return res;
+}
+
+Vector<3> get_expected_pos(double t, double thetaN_1, double thetaN_2) {
+    auto nu_coeff = get_program_nu3_coeff(thetaN_1, thetaN_2);
+
+    double theta = (nu_coeff[0] * t * t / 2 + nu_coeff[1] * t) / parameters::symmetrical::L;
+    double x = program_R * (cos(theta) - 1);
+    double y = program_R * sin(theta);
+
+    Vector<3> res;
+
+    res[0] = x;
+    res[1] = y;
+    res[2] = theta;
+
+    return res;
+}
+
+bool N_satisfies_the_model(QVector<double> N) {
+    return *std::min_element(N.begin(), N.end()) > 0;
+}
+
+bool model_satisfied(QVector<double> N_1, QVector<double> N_2, QVector<double> N_3) {
+    return N_satisfies_the_model(N_1) && N_satisfies_the_model(N_2) && N_satisfies_the_model(N_3);
+}
+
+int div_ceil(double d1, double d2) {
+    return ceil(d1 / d2);
+}
+
+double loop_iter(double theta) {
+    return div_ceil(theta, 2 * M_PI);
+}
+
+int find_last_loop_start(QVector<double> theta) {
+    for (int i = theta.length() - 1; i > 0; i--) {
+        if (loop_iter(theta[i]) != loop_iter(theta[i - 1])) {
+            return i;
+        }
+    }
+
+    return 0;
+}
 
 void MainWindow::on_pushButton_compute_clicked()
 {
     bool ok;
 
-    initial_values[0] = ui->lineEdit_nu_1_0->text().toDouble(&ok);
+    double thetaN_1 = ui->lineEdit_N_1->text().toDouble(&ok);
     if (!ok)
         return;
 
-    initial_values[1] = ui->lineEdit_nu_2_0->text().toDouble(&ok);
+    double thetaN_2 = ui->lineEdit_N_2->text().toDouble(&ok);
     if (!ok)
         return;
 
-    initial_values[2] = ui->lineEdit_nu_3_0->text().toDouble(&ok);
+    double T = ui->lineEdit_T->text().toDouble(&ok);
     if (!ok)
-        return;
-
-    initial_values[3] = 0;
-
-    initial_values[4] = 0;
-
-    initial_values[5] = 0;
-
-    Vector<3> control_1, control_2;
-
-    control_1[0] = ui->lineEdit_U_1_m->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_1[1] = ui->lineEdit_U_2_m->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_1[2] = ui->lineEdit_U_3_m->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_2[0] = ui->lineEdit_U_1_p->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_2[1] = ui->lineEdit_U_2_p->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_2[2] = ui->lineEdit_U_3_p->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    t_sw = ui->lineEdit_t_sw->text().toDouble(&ok);
-    if (!ok || t_sw <= 0)
-        return;
-
-    T = ui->lineEdit_T->text().toDouble(&ok);
-    if (!ok || T <= t_sw)
         return;
 
     if (plotted)
@@ -110,11 +140,119 @@ void MainWindow::on_pushButton_compute_clicked()
         theta.clear();
     }
 
-    DOPRI8_symmetrical_plot (0, T, initial_values, control_1,
-                             control_2, t_sw,
-                             t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
-                             x_symm, y_symm, theta_symm,
-                             P_real, P_advice, N_1, N_2, N_3);
+    int steps_per_loop = 30;
+    double first_loop_length = 1 / thetaN_1;
+    int steps = steps_per_loop * (T / first_loop_length);
+
+    bool break_next = false;
+
+    for (int i = 0; i < steps; i++) {
+        qDebug() << "iteration " << i << "\n";
+        double t_step = T / steps;
+
+        double real_initial_t;
+        double real_t_sw;
+        double real_final_t;
+        Vector<6> real_initial_values;
+        Vector<6> real_final_values;
+
+        if (i == 0) {
+            real_initial_t = 0.0;
+
+            auto expected_start_nu = get_expected_nu(real_initial_t, thetaN_1, thetaN_2);
+            auto expected_start_pos = get_expected_pos(real_initial_t, thetaN_1, thetaN_2);
+
+            real_initial_values[0] = expected_start_nu[0];
+            real_initial_values[1] = expected_start_nu[1];
+            real_initial_values[2] = expected_start_nu[2];
+            real_initial_values[3] = expected_start_pos[0];
+            real_initial_values[4] = expected_start_pos[1];
+            real_initial_values[5] = expected_start_pos[2];
+        } else {
+            real_initial_t = t_symm.last();
+
+            real_initial_values[0] = nu_1_symm.last();
+            real_initial_values[1] = nu_2_symm.last();
+            real_initial_values[2] = nu_3_symm.last();
+            real_initial_values[3] = x_symm.last();
+            real_initial_values[4] = y_symm.last();
+            real_initial_values[5] = theta_symm.last();
+        }
+
+        real_t_sw = real_initial_t + t_step / 2;
+        real_final_t = real_initial_t + t_step;
+
+        auto expected_nu = get_expected_nu(real_final_t, thetaN_1, thetaN_2);
+        auto expected_pos = get_expected_pos(real_final_t, thetaN_1, thetaN_2);
+
+        real_final_values[0] = expected_nu[0];
+        real_final_values[1] = expected_nu[1];
+        real_final_values[2] = expected_nu[2];
+        real_final_values[3] = expected_pos[0];
+        real_final_values[4] = expected_pos[1];
+        real_final_values[5] = expected_pos[2];
+
+        qDebug() << "from " << "x: " << real_initial_values[3] << "y: " << real_initial_values[4] << "theta: " << real_initial_values[5] << "\n";
+        qDebug() << "to " << "x: " << real_final_values[3] << "y: " << real_final_values[4] << "theta: " << real_final_values[5] << "\n";
+
+        double relative_initial_t = 0;
+        double relative_t_sw = real_t_sw - real_initial_t;
+        double relative_final_t = real_final_t - real_initial_t;
+
+        Vector<6> relative_initial_values;
+        relative_initial_values[0] = real_initial_values[0],
+        relative_initial_values[1] = real_initial_values[1];
+        relative_initial_values[2] = real_initial_values[2];
+        relative_initial_values[3] = 0;
+        relative_initial_values[4] = 0;
+//        relative_initial_values[5] = 0;
+        relative_initial_values[5] = real_initial_values[5];
+
+        Vector<6> relative_final_values;
+        relative_final_values[0] = real_final_values[0];
+        relative_final_values[1] = real_final_values[1];
+        relative_final_values[2] = real_final_values[2];
+        relative_final_values[3] = real_final_values[3] - real_initial_values[3];
+        relative_final_values[4] = real_final_values[4] - real_initial_values[4];
+//        relative_final_values[5] = real_final_values[5] - real_initial_values[5];
+        relative_final_values[5] = real_final_values[5];
+
+        Vector<6> control = predict_control(
+                    relative_t_sw,
+                    relative_final_t,
+                    relative_initial_values[0],
+                    relative_final_values[0],
+                    relative_initial_values[1],
+                    relative_final_values[1],
+                    relative_initial_values[2],
+                    relative_final_values[2],
+                    relative_final_values[3],
+                    relative_final_values[4],
+                    relative_initial_values[5],
+                    relative_final_values[5]);
+
+        Vector<3> control_1 = {control[0], control[1], control[2]};
+        Vector<3> control_2 = {control[3], control[4], control[5]};
+
+        DOPRI8_symmetrical_plot (real_initial_t,
+                                 real_final_t,
+                                 real_initial_values,
+                                 control_1,
+                                 control_2,
+                                 real_t_sw,
+                                 t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
+                                 x_symm, y_symm, theta_symm,
+                                 P_real, P_advice, N_1, N_2, N_3);
+
+        if (break_next) {
+            break;
+        }
+
+        if (!model_satisfied(N_1, N_2, N_3)) {
+            qDebug() << "break next" << "\n";
+            break_next = true;
+        }
+    }
 
     if (plotted)
     {
@@ -123,6 +261,7 @@ void MainWindow::on_pushButton_compute_clicked()
         ui->PlotWidget_N->clearPlottables();
     }
 
+    // Use different color for the last loop;
     trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
     trajectory_plus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
 
@@ -130,15 +269,17 @@ void MainWindow::on_pushButton_compute_clicked()
 
     QPen pen_minus_symm(Qt::blue);
     QPen pen_plus_symm(Qt::magenta);
+    pen_plus_symm.setWidth(pen_plus_symm.width() + 1);
     trajectory_minus_symm->setPen(pen_minus_symm);
     trajectory_plus_symm->setPen(pen_plus_symm);
 
     int i = 0;
-    int i_boundary;
-    for (i = 0; t_symm[i] < t_sw; i++)
-        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+    int i_boundary = find_last_loop_start(theta_symm);
 
-    i_boundary = i;
+    qDebug() << "last loop start " << theta_symm[i_boundary] << "last loop end " << theta_symm.last() << "\n";
+
+    for (i = 0; i < i_boundary; i++)
+        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
 
     for (; i < x_symm.length(); i++)
         data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
@@ -146,26 +287,26 @@ void MainWindow::on_pushButton_compute_clicked()
     trajectory_minus_symm->data()->set(data_minus_symm, true);
     trajectory_plus_symm->data()->set(data_plus_symm, true);
 
-    double g = 9.81;
-    double bad_advice_1 = (-3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
-                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                            3 * parameters::c2 * nu_1_symm[i_boundary] / 2 + 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
-                            g*parameters::symmetrical::rho) / parameters::c1;
+//    double g = 9.81;
+//    double bad_advice_1 = (-3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
+//                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                            3 * parameters::c2 * nu_1_symm[i_boundary] / 2 + 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
+//                            g*parameters::symmetrical::rho) / parameters::c1;
 
-    double bad_advice_2 = (3 * parameters::lambda * parameters::lambda / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] + \
-                            3 * parameters::c2 * nu_1_symm[i_boundary] - \
-                            g*parameters::symmetrical::rho) / parameters::c1;
+//    double bad_advice_2 = (3 * parameters::lambda * parameters::lambda / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] + \
+//                            3 * parameters::c2 * nu_1_symm[i_boundary] - \
+//                            g*parameters::symmetrical::rho) / parameters::c1;
 
-    double bad_advice_3 = (3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
-                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                            3 * parameters::c2 * nu_1_symm[0] / 2 - 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
-                            g*parameters::symmetrical::rho) / parameters::c1;
+//    double bad_advice_3 = (3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
+//                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                            3 * parameters::c2 * nu_1_symm[0] / 2 - 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
+//                            g*parameters::symmetrical::rho) / parameters::c1;
 
-    qDebug() << "try U_1_plus + U_2_plus - 2 U_3_plus > " << bad_advice_1 << " for more fun result" << '\n';
-    qDebug() << "try U_1_plus - 2 U_2_plus + U_3_plus > " << bad_advice_2 << " for more fun result" << '\n';
-    qDebug() << "try -2 U_1_plus + U_2_plus + U_3_plus > " << bad_advice_3 << " for more fun result" << '\n';
+//    qDebug() << "try U_1_plus + U_2_plus - 2 U_3_plus > " << bad_advice_1 << " for more fun result" << '\n';
+//    qDebug() << "try U_1_plus - 2 U_2_plus + U_3_plus > " << bad_advice_2 << " for more fun result" << '\n';
+//    qDebug() << "try -2 U_1_plus + U_2_plus + U_3_plus > " << bad_advice_3 << " for more fun result" << '\n';
 
     double x_max = *std::max_element(x_symm.begin(), x_symm.end());
     double x_min = *std::min_element(x_symm.begin(), x_symm.end());
@@ -282,42 +423,7 @@ void MainWindow::on_pushButton_compute_clicked()
                                 + "_y_T_" + QString::number(final_values[4], 'g', 4)
                                 + "_theta_T_" + QString::number(final_values[5], 'g', 4)
                                 + ".pdf");
+    qDebug() << "PlotWidget_N" << "\n";
 
     plotted = true;
-}
-
-void MainWindow::on_pushButton_generate_clicked()
-{
-    std::random_device rd;  //Will be used to obtain a seed for the random number engine
-    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
-    std::uniform_real_distribution<> nu_1_2(1.0, -1.0);
-    std::uniform_real_distribution<> nu_3(0.2, -0.2);
-    std::uniform_real_distribution<> x_y(-50, 50);
-    std::uniform_real_distribution<> theta(- 4 * M_PI, 4 * M_PI);
-    std::uniform_real_distribution<> time(1, 50);
-
-    double t_1 = time(gen), t_2 = time(gen);
-
-    if (t_1 > t_2)
-    {
-        ui->lineEdit_T->setText(QString::number(t_1));
-        ui->lineEdit_t_sw->setText(QString::number(t_2));
-    }
-    else
-    {
-        ui->lineEdit_T->setText(QString::number(t_2));
-        ui->lineEdit_t_sw->setText(QString::number(t_1));
-    }
-
-//    ui->lineEdit_nu_1_0->setText(QString::number(nu_1_2(gen)));
-//    ui->lineEdit_nu_2_0->setText(QString::number(nu_1_2(gen)));
-//    ui->lineEdit_nu_1_T->setText(QString::number(nu_1_2(gen)));
-//    ui->lineEdit_nu_2_T->setText(QString::number(nu_1_2(gen)));
-
-//    ui->lineEdit_nu_3_0->setText(QString::number(nu_3(gen)));
-//    ui->lineEdit_nu_3_T->setText(QString::number(nu_3(gen)));
-
-//    ui->lineEdit_x_T->setText(QString::number(x_y(gen)));
-//    ui->lineEdit_y_T->setText(QString::number(x_y(gen)));
-//    ui->lineEdit_theta_T->setText(QString::number(theta(gen)));
 }

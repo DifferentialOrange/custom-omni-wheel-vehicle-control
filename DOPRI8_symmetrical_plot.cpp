@@ -298,9 +298,9 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
         }
 
         //for correct plotting; there could be too few points
-        if (h > (t_right - t_left) / 100)
+        if (h > (t_right - t_left) / 10)
         {
-            h = (t_right - t_left) / 100;
+            h = (t_right - t_left) / 10;
         }
 
         //last step correction
