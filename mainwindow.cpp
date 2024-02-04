@@ -99,19 +99,10 @@ int find_last_loop_start(QVector<double> theta) {
 
 void MainWindow::on_pushButton_compute_clicked()
 {
-    bool ok;
-
     double nu_3_lin_coef = 0.01;
-    if (!ok)
-        return;
-
     double nu_3_const_coef = 0.1;
-    if (!ok)
-        return;
 
-    double T = ui->lineEdit_T->text().toDouble(&ok);
-    if (!ok)
-        return;
+    double T = 30;
 
     if (plotted)
     {
@@ -141,6 +132,8 @@ void MainWindow::on_pushButton_compute_clicked()
         U1.clear();
         U2.clear();
         U3.clear();
+    }
+
     int steps_per_loop = 30;
     double theta_square_coef = nu_3_lin_coef;
     double theta_lin_coef = nu_3_const_coef;
@@ -150,7 +143,7 @@ void MainWindow::on_pushButton_compute_clicked()
                                           theta_square_coef
                 );
     qDebug() << "sqrt(theta_lin_coef * theta_lin_coef + 2 * theta_square_coef) " << sqrt(theta_lin_coef * theta_lin_coef + 2 * theta_square_coef) << "\n";
-    qDebug() << "theta_lin_coef " << theta_lin_coef << "\n";
+    qDebug() << "theta_square_coef " << theta_square_coef << "\n";
     qDebug() << "theta_lin_coef " << theta_lin_coef << "\n";
     qDebug() << "first_loop_length " << first_loop_length << "\n";
     int steps = steps_per_loop * (T / first_loop_length);
@@ -251,18 +244,14 @@ void MainWindow::on_pushButton_compute_clicked()
                                  real_t_sw,
                                  t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                                  x_symm, y_symm, theta_symm,
-                                 P_real, P_advice, N_1, N_2, N_3);
+                                 P_real, P_advice, N_1, N_2, N_3, U1, U2, U3);
 
         if (!model_satisfied(N_1, N_2, N_3)) {
             break;
         }
     }
 
-    DOPRI8_symmetrical_plot (0, T, initial_values, control_1,
-                             control_2, t_sw,
-                             t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
-                             x_symm, y_symm, theta_symm,
-                             P_real, P_advice, N_1, N_2, N_3, U1, U2, U3);
+    get_program_nu3_coeff(theta_square_coef, theta_lin_coef);
 
     if (plotted)
     {
@@ -332,7 +321,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_explicit.pdf");
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_circle.pdf");
 
     double P_max_1 = *std::max_element(P_real.begin(), P_real.end());
     double P_max_2 = *std::max_element(P_advice.begin(), P_advice.end());
@@ -352,13 +341,13 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_P->graph(1)->setName("real");
     ui->PlotWidget_P->graph(1)->setPen(QPen(Qt::green));
 
-    ui->PlotWidget_P->xAxis->setRange(0, T);
+    ui->PlotWidget_P->xAxis->setRange(0, t_symm.last());
     ui->PlotWidget_P->yAxis->setRange(- 0.05, P_max + 0.05);
     ui->PlotWidget_P->xAxis->setLabel("t");
     ui->PlotWidget_P->yAxis->setLabel("P");
     ui->PlotWidget_P->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_P->replot();
-    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_explicit.pdf");
+    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_circle.pdf");
 
     double N_max_1 = *std::max_element(N_1.begin(), N_1.end());
     double N_max_2 = *std::max_element(N_2.begin(), N_2.end());
@@ -386,14 +375,14 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->graph(2)->setName("N_3");
     ui->PlotWidget_N->graph(2)->setPen(QPen(Qt::cyan));
 
-    ui->PlotWidget_N->xAxis->setRange(0, T);
+    ui->PlotWidget_N->xAxis->setRange(0, t_symm.last());
     ui->PlotWidget_N->yAxis->setRange(N_min - 0.05, N_max + 0.05);
     ui->PlotWidget_N->xAxis->setLabel("t");
     ui->PlotWidget_N->yAxis->setLabel("N");
     ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N->replot();
 
-    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_explicit.pdf");
+    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_circle.pdf");
 
     double U_max_1 = *std::max_element(U1.begin(), U1.end());
     double U_max_2 = *std::max_element(U2.begin(), U2.end());
@@ -421,14 +410,14 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_U->graph(2)->setName("U_3");
     ui->PlotWidget_U->graph(2)->setPen(QPen(Qt::cyan));
 
-    ui->PlotWidget_U->xAxis->setRange(0, T);
+    ui->PlotWidget_U->xAxis->setRange(0, t_symm.last());
     ui->PlotWidget_U->yAxis->setRange(U_min - 0.05, U_max + 0.05);
     ui->PlotWidget_U->xAxis->setLabel("t");
     ui->PlotWidget_U->yAxis->setLabel("U");
     ui->PlotWidget_U->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_U->replot();
 
-    ui->PlotWidget_U->savePdf("../custom-omni-wheel-vehicle-control/PICS/U_explicit.pdf");
+    ui->PlotWidget_U->savePdf("../custom-omni-wheel-vehicle-control/PICS/U_circle.pdf");
 
     double nu_max_1 = *std::max_element(nu_1_symm.begin(), nu_1_symm.end());
     double nu_max_2 = *std::max_element(nu_2_symm.begin(), nu_2_symm.end());
@@ -456,14 +445,14 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_nu->graph(2)->setName("nu_3");
     ui->PlotWidget_nu->graph(2)->setPen(QPen(Qt::cyan));
 
-    ui->PlotWidget_nu->xAxis->setRange(0, T);
+    ui->PlotWidget_nu->xAxis->setRange(0, t_symm.last());
     ui->PlotWidget_nu->yAxis->setRange(nu_min - 0.05, nu_max + 0.05);
     ui->PlotWidget_nu->xAxis->setLabel("t");
     ui->PlotWidget_nu->yAxis->setLabel("nu");
     ui->PlotWidget_nu->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_nu->replot();
 
-    ui->PlotWidget_nu->savePdf("../custom-omni-wheel-vehicle-control/PICS/nu_explicit.pdf");
+    ui->PlotWidget_nu->savePdf("../custom-omni-wheel-vehicle-control/PICS/nu_circle.pdf");
 
     plotted = true;
 }
