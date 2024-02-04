@@ -33,7 +33,8 @@ Vector<6> rightpart(double t, Vector<6> x, Vector<3> control_minus, Vector<3> co
     return rez;
 }
 
-void compute_P(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw, QVector<double> &P_real, QVector<double> &P_advice)
+void compute_P(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw, QVector<double> &P_real, QVector<double> &P_advice,
+               QVector<double> &PT_advice)
 {
     Vector<3> u;
 
@@ -69,8 +70,14 @@ void compute_P(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control
 //    qDebug() << "H" << H << '\n';
 //    qDebug() << "good_advice" << good_advice << '\n';
     double v_s = sqrt(x[0] * x[0] + x[1] * x[1]);
-    double good_advice = fru_0 / sqrt(2.0) - v_s / sqrt(2.0) * sqrt(fru_2*fru_2 *x[2]*x[2] + fru_1 * fru_1);
-    P_advice.append(good_advice);
+    double v_advice = fru_0 / sqrt(2.0) - v_s / sqrt(2.0) * sqrt(fru_2*fru_2 *x[2]*x[2] + fru_1 * fru_1);
+    P_advice.append(std::max(v_advice, 0.0));
+
+    double H = (1 + 3.0 * l * l / 2) * (x[0] * x[0] + x[1] * x[1]) + (1 + 3.0 * r * r * l * l / L / L) * x[2] * x[2];
+    double T_advice = fru_0 / sqrt(2.0) - sqrt(3.0) * r / c1 * \
+                             sqrt(3 * l * l / r / r + L * L) / sqrt(3 * l * l + 2) * \
+                            (l * l / (3 * l * l / r / r + L * L) * H + c2 * c2 / 2 / l / l);
+    PT_advice.append(std::max(T_advice, 0.0));
 }
 
 void compute_N(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control_plus, double t_sw,
@@ -165,7 +172,7 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
                     QVector<double> &theta_vec,
-                    QVector<double> &P_real, QVector<double> &P_advice,
+                    QVector<double> &P_real, QVector<double> &P_advice, QVector<double> &PT_advice,
                     QVector<double> &N_1, QVector<double> &N_2, QVector<double> &N_3,
                     QVector<double> &U1, QVector<double> &U2, QVector<double> &U3)
 {
@@ -192,7 +199,7 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
     x_vec.append(xl[3]);
     y_vec.append(xl[4]);
     theta_vec.append(xl[5]);
-    compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice);
+    compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice, PT_advice);
     compute_N(tl, xl, control_minus, control_plus, t_sw, N_1, N_2, N_3);
     U1.append(control_minus[0]);
     U2.append(control_minus[1]);
@@ -266,7 +273,7 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
             x_vec.append(xl[3]);
             y_vec.append(xl[4]);
             theta_vec.append(xl[5]);
-            compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice);
+            compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice, PT_advice);
             compute_N(tl, xl, control_minus, control_plus, t_sw, N_1, N_2, N_3);
             U1.append(control_minus[0]);
             U2.append(control_minus[1]);
@@ -300,7 +307,7 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                 x_vec.append(xl[3]);
                 y_vec.append(xl[4]);
                 theta_vec.append(xl[5]);
-                compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice);
+                compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice, PT_advice);
                 compute_N(tl, xl, control_minus, control_plus, t_sw, N_1, N_2, N_3);
                 U1.append(control_minus[0]);
                 U2.append(control_minus[1]);

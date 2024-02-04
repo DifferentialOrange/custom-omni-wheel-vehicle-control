@@ -118,7 +118,7 @@ void MainWindow::on_pushButton_compute_clicked()
                              control_2, t_sw,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                              x_symm, y_symm, theta_symm,
-                             P_real, P_advice, N_1, N_2, N_3, U1, U2, U3);
+                             P_real, P_advice, PT_advice, N_1, N_2, N_3, U1, U2, U3);
 
     if (plotted)
     {
@@ -190,7 +190,9 @@ void MainWindow::on_pushButton_compute_clicked()
 
     double P_max_1 = *std::max_element(P_real.begin(), P_real.end());
     double P_max_2 = *std::max_element(P_advice.begin(), P_advice.end());
-    double P_max = std::max(P_max_1, P_max_2);
+    double P_max_3 = *std::max_element(PT_advice.begin(), PT_advice.end());
+    double P_max1 = std::max(P_max_1, P_max_2);
+    double P_max = std::max(P_max1, P_max_3);
 
     ui->PlotWidget_P->legend->setVisible(true);
 
@@ -207,12 +209,32 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_P->graph(1)->setPen(QPen(Qt::green));
 
     ui->PlotWidget_P->xAxis->setRange(0, T);
-    ui->PlotWidget_P->yAxis->setRange(- 0.05, P_max + 0.05);
+    ui->PlotWidget_P->yAxis->setRange(- 10, P_max + 10);
     ui->PlotWidget_P->xAxis->setLabel("t");
     ui->PlotWidget_P->yAxis->setLabel("P");
     ui->PlotWidget_P->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_P->replot();
-    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_explicit.pdf");
+    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_V_explicit.pdf");
+
+    ui->PlotWidget_PT->legend->setVisible(true);
+
+    ui->PlotWidget_PT->addGraph();
+    ui->PlotWidget_PT->graph(0)->setData(t_symm, PT_advice);
+    ui->PlotWidget_PT->graph(0)->setName("advice");
+    ui->PlotWidget_PT->graph(0)->setPen(pen_advice);
+
+    ui->PlotWidget_PT->addGraph();
+    ui->PlotWidget_PT->graph(1)->setData(t_symm, P_real);
+    ui->PlotWidget_PT->graph(1)->setName("real");
+    ui->PlotWidget_PT->graph(1)->setPen(QPen(Qt::green));
+
+    ui->PlotWidget_PT->xAxis->setRange(0, T);
+    ui->PlotWidget_PT->yAxis->setRange(- 10, P_max + 10);
+    ui->PlotWidget_PT->xAxis->setLabel("t");
+    ui->PlotWidget_PT->yAxis->setLabel("P");
+    ui->PlotWidget_PT->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_PT->replot();
+    ui->PlotWidget_PT->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_T_explicit.pdf");
 
     double N_max_1 = *std::max_element(N_1.begin(), N_1.end());
     double N_max_2 = *std::max_element(N_2.begin(), N_2.end());
