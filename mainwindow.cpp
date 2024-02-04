@@ -9,10 +9,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->lineEdit_N_1->setText("0.1");
-    ui->lineEdit_N_2->setText("0.21");
-    ui->lineEdit_T->setText("20");
-
 //    ui->lineEdit_nu_1_0->setText("0");
 //    ui->lineEdit_nu_2_0->setText("0");
 //    ui->lineEdit_nu_3_0->setText("0");
@@ -33,21 +29,23 @@ MainWindow::~MainWindow()
 
 const double program_R = 2;
 
-Vector<2> get_program_nu3_coeff(double thetaN_1, double thetaN_2) {
+Vector<2> get_program_nu3_coeff(double theta_square_coef, double theta_lin_coef) {
     Vector<2> res;
 
-    res[0] = 2 * M_PI * parameters::symmetrical::L * (thetaN_2 - 2 * thetaN_1);
-    res[1] = 2 * M_PI * parameters::symmetrical::L * (2 * thetaN_1 - thetaN_2 / 2);
+    res[0] = 2 * M_PI * parameters::symmetrical::L * theta_square_coef;
+    res[1] = 2 * M_PI * parameters::symmetrical::L * theta_lin_coef;
 //    res[0] = 0;
 //    res[1] = 2 * M_PI * parameters::symmetrical::L * thetaN_1;
+
+    qDebug() << "nu3(t) = " << res[0] << "t +" << res[1] << "\n";
 
     return res;
 }
 
-Vector<3> get_expected_nu(double t, double thetaN_1, double thetaN_2) {
+Vector<3> get_expected_nu(double t, double theta_square_coef, double theta_lin_coef) {
     Vector<3> res;
 
-    auto nu_coeff = get_program_nu3_coeff(thetaN_1, thetaN_2);
+    auto nu_coeff = get_program_nu3_coeff(theta_square_coef, theta_lin_coef);
 
     res[0] = 0;
     res[2] = nu_coeff[0] * t + nu_coeff[1];
@@ -56,8 +54,8 @@ Vector<3> get_expected_nu(double t, double thetaN_1, double thetaN_2) {
     return res;
 }
 
-Vector<3> get_expected_pos(double t, double thetaN_1, double thetaN_2) {
-    auto nu_coeff = get_program_nu3_coeff(thetaN_1, thetaN_2);
+Vector<3> get_expected_pos(double t, double theta_square_coef, double theta_lin_coef) {
+    auto nu_coeff = get_program_nu3_coeff(theta_square_coef, theta_lin_coef);
 
     double theta = (nu_coeff[0] * t * t / 2 + nu_coeff[1] * t) / parameters::symmetrical::L;
     double x = program_R * (cos(theta) - 1);
@@ -91,6 +89,7 @@ double loop_iter(double theta) {
 int find_last_loop_start(QVector<double> theta) {
     for (int i = theta.length() - 1; i > 0; i--) {
         if (loop_iter(theta[i]) != loop_iter(theta[i - 1])) {
+            qDebug() << "there were " << loop_iter(theta[i - 1]) + 1 << "completed loops\n";
             return i;
         }
     }
@@ -102,11 +101,11 @@ void MainWindow::on_pushButton_compute_clicked()
 {
     bool ok;
 
-    double thetaN_1 = ui->lineEdit_N_1->text().toDouble(&ok);
+    double nu_3_lin_coef = ui->lineEdit_nu_3_lin_coef->text().toDouble(&ok);
     if (!ok)
         return;
 
-    double thetaN_2 = ui->lineEdit_N_2->text().toDouble(&ok);
+    double nu_3_const_coef = ui->lineEdit_nu_3_const_coef->text().toDouble(&ok);
     if (!ok)
         return;
 
@@ -141,10 +140,18 @@ void MainWindow::on_pushButton_compute_clicked()
     }
 
     int steps_per_loop = 30;
-    double first_loop_length = 1 / thetaN_1;
+    double theta_square_coef = nu_3_lin_coef;
+    double theta_lin_coef = nu_3_const_coef;
+    double first_loop_length = (
+                (sqrt(theta_lin_coef * theta_lin_coef + 2 * theta_square_coef) - theta_lin_coef)
+            / // -------------------------------------------------------------------------------
+                                          theta_square_coef
+                );
+    qDebug() << "sqrt(theta_lin_coef * theta_lin_coef + 2 * theta_square_coef) " << sqrt(theta_lin_coef * theta_lin_coef + 2 * theta_square_coef) << "\n";
+    qDebug() << "theta_lin_coef " << theta_lin_coef << "\n";
+    qDebug() << "theta_lin_coef " << theta_lin_coef << "\n";
+    qDebug() << "first_loop_length " << first_loop_length << "\n";
     int steps = steps_per_loop * (T / first_loop_length);
-
-    bool break_next = false;
 
     for (int i = 0; i < steps; i++) {
         qDebug() << "iteration " << i << "\n";
@@ -159,8 +166,8 @@ void MainWindow::on_pushButton_compute_clicked()
         if (i == 0) {
             real_initial_t = 0.0;
 
-            auto expected_start_nu = get_expected_nu(real_initial_t, thetaN_1, thetaN_2);
-            auto expected_start_pos = get_expected_pos(real_initial_t, thetaN_1, thetaN_2);
+            auto expected_start_nu = get_expected_nu(real_initial_t, theta_square_coef, theta_lin_coef);
+            auto expected_start_pos = get_expected_pos(real_initial_t, theta_square_coef, theta_lin_coef);
 
             real_initial_values[0] = expected_start_nu[0];
             real_initial_values[1] = expected_start_nu[1];
@@ -182,8 +189,8 @@ void MainWindow::on_pushButton_compute_clicked()
         real_t_sw = real_initial_t + t_step / 2;
         real_final_t = real_initial_t + t_step;
 
-        auto expected_nu = get_expected_nu(real_final_t, thetaN_1, thetaN_2);
-        auto expected_pos = get_expected_pos(real_final_t, thetaN_1, thetaN_2);
+        auto expected_nu = get_expected_nu(real_final_t, theta_square_coef, theta_lin_coef);
+        auto expected_pos = get_expected_pos(real_final_t, theta_square_coef, theta_lin_coef);
 
         real_final_values[0] = expected_nu[0];
         real_final_values[1] = expected_nu[1];
@@ -244,15 +251,12 @@ void MainWindow::on_pushButton_compute_clicked()
                                  x_symm, y_symm, theta_symm,
                                  P_real, P_advice, N_1, N_2, N_3);
 
-        if (break_next) {
+        if (!model_satisfied(N_1, N_2, N_3)) {
             break;
         }
-
-        if (!model_satisfied(N_1, N_2, N_3)) {
-            qDebug() << "break next" << "\n";
-            break_next = true;
-        }
     }
+
+    get_program_nu3_coeff(theta_square_coef, theta_lin_coef);
 
     if (plotted)
     {
@@ -321,17 +325,9 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_t_sw_"
-                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
-                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
-                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
-                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
-                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
-                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
-                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
-                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
-                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
-                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_T_" + QString::number(T, 'g', 4)
+                                + "_theta_square_coef_" + QString::number(theta_square_coef, 'g', 4)
+                                + "_theta_lin_coef_" + QString::number(theta_lin_coef, 'g', 4)
                                 + ".pdf");
     qDebug() << "PlotWidget_trajectory" << "\n";
 
@@ -359,7 +355,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_P->graph(1)->setPen(QPen(Qt::red));
 
     ui->PlotWidget_P->xAxis->setRange(0, t_symm.last());
-    ui->PlotWidget_P->yAxis->setRange(- 0.05 + P_min, P_max + 0.05);
+    ui->PlotWidget_P->yAxis->setRange(- 5 + P_min, P_max + 5);
     ui->PlotWidget_P->xAxis->setLabel("t");
     ui->PlotWidget_P->yAxis->setLabel("P");
     ui->PlotWidget_P->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
@@ -367,15 +363,8 @@ void MainWindow::on_pushButton_compute_clicked()
 
     ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_"
                                 + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
-                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
-                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
-                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
-                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
-                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
-                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
-                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
-                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
-                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
+                              + "_theta_square_coef_" + QString::number(theta_square_coef, 'g', 4)
+                              + "_theta_lin_coef_" + QString::number(theta_lin_coef, 'g', 4)
                                 + ".pdf");
 
     double N_max_1 = *std::max_element(N_1.begin(), N_1.end());
@@ -411,17 +400,9 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N->replot();
 
-    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_"
-                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
-                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
-                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
-                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
-                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
-                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
-                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
-                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
-                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
-                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
+    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_T_" + QString::number(T, 'g', 4)
+                                + "_theta_square_coef_" + QString::number(theta_square_coef, 'g', 4)
+                                + "_theta_lin_coef_" + QString::number(theta_lin_coef, 'g', 4)
                                 + ".pdf");
     qDebug() << "PlotWidget_N" << "\n";
 
