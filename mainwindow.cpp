@@ -194,10 +194,12 @@ void MainWindow::on_pushButton_compute_clicked()
 
     ui->PlotWidget_P->legend->setVisible(true);
 
+    QPen pen_advice(Qt::red);
+    pen_advice.setStyle(Qt::DashLine);
     ui->PlotWidget_P->addGraph();
     ui->PlotWidget_P->graph(0)->setData(t_symm, P_advice);
     ui->PlotWidget_P->graph(0)->setName("advice");
-    ui->PlotWidget_P->graph(0)->setPen(QPen(Qt::red));
+    ui->PlotWidget_P->graph(0)->setPen(pen_advice);
 
     ui->PlotWidget_P->addGraph();
     ui->PlotWidget_P->graph(1)->setData(t_symm, P_real);
