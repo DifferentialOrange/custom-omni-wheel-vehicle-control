@@ -51,7 +51,7 @@ private:
     Vector<6> initial_values, final_values;
     double t_sw, T;
 
-    QVector<double> P_real, P_advice;
+    QVector<double> P_real, P_advice, PT_advice;
     QVector<double> N_1, N_2, N_3;
 
     bool plotted;

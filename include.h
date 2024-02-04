@@ -35,7 +35,7 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
                     QVector<double> &theta_vec,
-                    QVector<double> &P_real, QVector<double> &P_advice,
+                    QVector<double> &P_real, QVector<double> &P_advice, QVector<double> &PT_advice,
                     QVector<double> &N_1, QVector<double> &N_2, QVector<double> &N_3,
                     QVector<double> &U1, QVector<double> &U2, QVector<double> &U3);
 
