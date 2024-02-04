@@ -27,61 +27,90 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+const double program_R = 2;
+
+Vector<2> get_program_nu3_coeff(double theta_square_coef, double theta_lin_coef) {
+    Vector<2> res;
+
+    res[0] = 2 * M_PI * parameters::symmetrical::L * theta_square_coef;
+    res[1] = 2 * M_PI * parameters::symmetrical::L * theta_lin_coef;
+//    res[0] = 0;
+//    res[1] = 2 * M_PI * parameters::symmetrical::L * thetaN_1;
+
+    qDebug() << "nu3(t) = " << res[0] << "t +" << res[1] << "\n";
+
+    return res;
+}
+
+Vector<3> get_expected_nu(double t, double theta_square_coef, double theta_lin_coef) {
+    Vector<3> res;
+
+    auto nu_coeff = get_program_nu3_coeff(theta_square_coef, theta_lin_coef);
+
+    res[0] = 0;
+    res[2] = nu_coeff[0] * t + nu_coeff[1];
+    res[1] = program_R * res[2] / parameters::symmetrical::L;
+
+    return res;
+}
+
+Vector<3> get_expected_pos(double t, double theta_square_coef, double theta_lin_coef) {
+    auto nu_coeff = get_program_nu3_coeff(theta_square_coef, theta_lin_coef);
+
+    double theta = (nu_coeff[0] * t * t / 2 + nu_coeff[1] * t) / parameters::symmetrical::L;
+    double x = program_R * (cos(theta) - 1);
+    double y = program_R * sin(theta);
+
+    Vector<3> res;
+
+    res[0] = x;
+    res[1] = y;
+    res[2] = theta;
+
+    return res;
+}
+
+bool N_satisfies_the_model(QVector<double> N) {
+    return *std::min_element(N.begin(), N.end()) > 0;
+}
+
+bool model_satisfied(QVector<double> N_1, QVector<double> N_2, QVector<double> N_3) {
+    return N_satisfies_the_model(N_1) && N_satisfies_the_model(N_2) && N_satisfies_the_model(N_3);
+}
+
+int div_ceil(double d1, double d2) {
+    return ceil(d1 / d2);
+}
+
+double loop_iter(double theta) {
+    return div_ceil(theta, 2 * M_PI);
+}
+
+int find_last_loop_start(QVector<double> theta) {
+    for (int i = theta.length() - 1; i > 0; i--) {
+        if (loop_iter(theta[i]) != loop_iter(theta[i - 1])) {
+            qDebug() << "there were " << loop_iter(theta[i - 1]) + 1 << "completed loops\n";
+            return i;
+        }
+    }
+
+    return 0;
+}
 
 void MainWindow::on_pushButton_compute_clicked()
 {
     bool ok;
 
-    initial_values[0] = ui->lineEdit_nu_1_0->text().toDouble(&ok);
+    double nu_3_lin_coef = 0.01;
     if (!ok)
         return;
 
-    initial_values[1] = ui->lineEdit_nu_2_0->text().toDouble(&ok);
+    double nu_3_const_coef = 0.1;
     if (!ok)
         return;
 
-    initial_values[2] = ui->lineEdit_nu_3_0->text().toDouble(&ok);
+    double T = ui->lineEdit_T->text().toDouble(&ok);
     if (!ok)
-        return;
-
-    initial_values[3] = 0;
-
-    initial_values[4] = 0;
-
-    initial_values[5] = 0;
-
-    Vector<3> control_1, control_2;
-
-    control_1[0] = ui->lineEdit_U_1_m->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_1[1] = ui->lineEdit_U_2_m->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_1[2] = ui->lineEdit_U_3_m->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_2[0] = ui->lineEdit_U_1_p->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_2[1] = ui->lineEdit_U_2_p->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    control_2[2] = ui->lineEdit_U_3_p->text().toDouble(&ok);
-    if (!ok)
-        return;
-
-    t_sw = ui->lineEdit_t_sw->text().toDouble(&ok);
-    if (!ok || t_sw <= 0)
-        return;
-
-    T = ui->lineEdit_T->text().toDouble(&ok);
-    if (!ok || T <= t_sw)
         return;
 
     if (plotted)
@@ -112,6 +141,121 @@ void MainWindow::on_pushButton_compute_clicked()
         U1.clear();
         U2.clear();
         U3.clear();
+    int steps_per_loop = 30;
+    double theta_square_coef = nu_3_lin_coef;
+    double theta_lin_coef = nu_3_const_coef;
+    double first_loop_length = (
+                (sqrt(theta_lin_coef * theta_lin_coef + 2 * theta_square_coef) - theta_lin_coef)
+            / // -------------------------------------------------------------------------------
+                                          theta_square_coef
+                );
+    qDebug() << "sqrt(theta_lin_coef * theta_lin_coef + 2 * theta_square_coef) " << sqrt(theta_lin_coef * theta_lin_coef + 2 * theta_square_coef) << "\n";
+    qDebug() << "theta_lin_coef " << theta_lin_coef << "\n";
+    qDebug() << "theta_lin_coef " << theta_lin_coef << "\n";
+    qDebug() << "first_loop_length " << first_loop_length << "\n";
+    int steps = steps_per_loop * (T / first_loop_length);
+
+    for (int i = 0; i < steps; i++) {
+        qDebug() << "iteration " << i << "\n";
+        double t_step = T / steps;
+
+        double real_initial_t;
+        double real_t_sw;
+        double real_final_t;
+        Vector<6> real_initial_values;
+        Vector<6> real_final_values;
+
+        if (i == 0) {
+            real_initial_t = 0.0;
+
+            auto expected_start_nu = get_expected_nu(real_initial_t, theta_square_coef, theta_lin_coef);
+            auto expected_start_pos = get_expected_pos(real_initial_t, theta_square_coef, theta_lin_coef);
+
+            real_initial_values[0] = expected_start_nu[0];
+            real_initial_values[1] = expected_start_nu[1];
+            real_initial_values[2] = expected_start_nu[2];
+            real_initial_values[3] = expected_start_pos[0];
+            real_initial_values[4] = expected_start_pos[1];
+            real_initial_values[5] = expected_start_pos[2];
+        } else {
+            real_initial_t = t_symm.last();
+
+            real_initial_values[0] = nu_1_symm.last();
+            real_initial_values[1] = nu_2_symm.last();
+            real_initial_values[2] = nu_3_symm.last();
+            real_initial_values[3] = x_symm.last();
+            real_initial_values[4] = y_symm.last();
+            real_initial_values[5] = theta_symm.last();
+        }
+
+        real_t_sw = real_initial_t + t_step / 2;
+        real_final_t = real_initial_t + t_step;
+
+        auto expected_nu = get_expected_nu(real_final_t, theta_square_coef, theta_lin_coef);
+        auto expected_pos = get_expected_pos(real_final_t, theta_square_coef, theta_lin_coef);
+
+        real_final_values[0] = expected_nu[0];
+        real_final_values[1] = expected_nu[1];
+        real_final_values[2] = expected_nu[2];
+        real_final_values[3] = expected_pos[0];
+        real_final_values[4] = expected_pos[1];
+        real_final_values[5] = expected_pos[2];
+
+        qDebug() << "from " << "x: " << real_initial_values[3] << "y: " << real_initial_values[4] << "theta: " << real_initial_values[5] << "\n";
+        qDebug() << "to " << "x: " << real_final_values[3] << "y: " << real_final_values[4] << "theta: " << real_final_values[5] << "\n";
+
+        double relative_initial_t = 0;
+        double relative_t_sw = real_t_sw - real_initial_t;
+        double relative_final_t = real_final_t - real_initial_t;
+
+        Vector<6> relative_initial_values;
+        relative_initial_values[0] = real_initial_values[0],
+        relative_initial_values[1] = real_initial_values[1];
+        relative_initial_values[2] = real_initial_values[2];
+        relative_initial_values[3] = 0;
+        relative_initial_values[4] = 0;
+//        relative_initial_values[5] = 0;
+        relative_initial_values[5] = real_initial_values[5];
+
+        Vector<6> relative_final_values;
+        relative_final_values[0] = real_final_values[0];
+        relative_final_values[1] = real_final_values[1];
+        relative_final_values[2] = real_final_values[2];
+        relative_final_values[3] = real_final_values[3] - real_initial_values[3];
+        relative_final_values[4] = real_final_values[4] - real_initial_values[4];
+//        relative_final_values[5] = real_final_values[5] - real_initial_values[5];
+        relative_final_values[5] = real_final_values[5];
+
+        Vector<6> control = predict_control(
+                    relative_t_sw,
+                    relative_final_t,
+                    relative_initial_values[0],
+                    relative_final_values[0],
+                    relative_initial_values[1],
+                    relative_final_values[1],
+                    relative_initial_values[2],
+                    relative_final_values[2],
+                    relative_final_values[3],
+                    relative_final_values[4],
+                    relative_initial_values[5],
+                    relative_final_values[5]);
+
+        Vector<3> control_1 = {control[0], control[1], control[2]};
+        Vector<3> control_2 = {control[3], control[4], control[5]};
+
+        DOPRI8_symmetrical_plot (real_initial_t,
+                                 real_final_t,
+                                 real_initial_values,
+                                 control_1,
+                                 control_2,
+                                 real_t_sw,
+                                 t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
+                                 x_symm, y_symm, theta_symm,
+                                 P_real, P_advice, N_1, N_2, N_3);
+
+        if (!model_satisfied(N_1, N_2, N_3)) {
+            break;
+        }
     }
 
     DOPRI8_symmetrical_plot (0, T, initial_values, control_1,
@@ -136,15 +280,17 @@ void MainWindow::on_pushButton_compute_clicked()
 
     QPen pen_minus_symm(Qt::gray);
     QPen pen_plus_symm(Qt::gray);
+    pen_plus_symm.setWidth(pen_plus_symm.width() + 1);
     trajectory_minus_symm->setPen(pen_minus_symm);
     trajectory_plus_symm->setPen(pen_plus_symm);
 
     int i = 0;
-    int i_boundary;
-    for (i = 0; t_symm[i] < t_sw; i++)
-        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+    int i_boundary = find_last_loop_start(theta_symm);
 
-    i_boundary = i;
+    qDebug() << "last loop start " << theta_symm[i_boundary] << "last loop end " << theta_symm.last() << "\n";
+
+    for (i = 0; i < i_boundary; i++)
+        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
 
     for (; i < x_symm.length(); i++)
         data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));

@@ -1,8 +1,13 @@
 #include "include.h"
 #include <gsl/gsl_linalg.h>
 
-Vector<6> predict_control(double t_sw, double T, double nu_1_0, double nu_1_T, double nu_2_0, double nu_2_T, double nu_3_0, double nu_3_T, 
-                            double x_T, double y_T, double theta_T)
+Vector<6> predict_control(double t_sw, double T,
+                          double nu_1_0, double nu_1_T,
+                          double nu_2_0, double nu_2_T,
+                          double nu_3_0, double nu_3_T,
+                          double x_T,
+                          double y_T,
+                          double theta_0, double theta_T)
 {
 
     double a_first_data[] = {    1, 0, 1 / parameters::symmetrical::kappa3, 0, 0, 0,
@@ -11,7 +16,7 @@ Vector<6> predict_control(double t_sw, double T, double nu_1_0, double nu_1_T, d
                                 -1 / (parameters::symmetrical::kappa3 * parameters::symmetrical::Lambda), 0, 0, 0, 1, 0,
                                 -exp(-parameters::symmetrical::kappa3 * t_sw) / (parameters::symmetrical::kappa3 * parameters::symmetrical::Lambda), exp(-parameters::symmetrical::kappa3 * t_sw) / (parameters::symmetrical::kappa3 * parameters::symmetrical::Lambda), t_sw / (parameters::symmetrical::kappa3 * parameters::symmetrical::Lambda), -t_sw / (parameters::symmetrical::kappa3 * parameters::symmetrical::Lambda), 1, -1,
                                 0, -exp(-parameters::symmetrical::kappa3 * T) / (parameters::symmetrical::kappa3 * parameters::symmetrical::Lambda), 0, T / (parameters::symmetrical::kappa3 * parameters::symmetrical::Lambda), 0, 1};
-    double b_first_data[] = {nu_3_0, 0, nu_3_T, 0, 0, theta_T};
+    double b_first_data[] = {nu_3_0, 0, nu_3_T, theta_0, 0, theta_T};
 
 
     gsl_matrix_view A_first = gsl_matrix_view_array(a_first_data, 6, 6);
