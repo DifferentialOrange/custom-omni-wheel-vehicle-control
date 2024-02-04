@@ -46,16 +46,30 @@ void compute_P(double t, Vector<6> x, Vector<3> control_minus, Vector<3> control
 
     double g = 9.81;
 
-    double h = (1 + 3.0 * parameters::lambda * parameters::lambda / 2) * (x[0] * x[0] + x[1] * x[1]) +
-            (1 + 3.0 * parameters::symmetrical::rho * parameters::symmetrical::rho * parameters::lambda * parameters::lambda /
-             parameters::symmetrical::Lambda / parameters::symmetrical::Lambda) * x[2] * x[2];
+    double fru_0 = sqrt(3.0) * parameters::symmetrical::rho * g / 3.0 / parameters::c1;
+    double fru_1 = sqrt(3.0) * parameters::c2 / parameters::c1;
+    double fru_2 = sqrt(3.0) * parameters::lambda * parameters::lambda / parameters::symmetrical::Lambda / parameters::c1;
 
-    double good_advice = g * parameters::symmetrical::rho / parameters::c1 / sqrt(6) -
-                (3 + sqrt(3)) * (parameters::lambda * parameters::lambda * h / sqrt(parameters::symmetrical::Lambda * parameters::symmetrical::Lambda +
-                                                                                    3 * parameters::symmetrical::rho * parameters::symmetrical::rho *
-                                                                                    parameters::lambda * parameters::lambda) +
-                                 parameters::c2 * sqrt(h)) / 2 / parameters::c1 / sqrt(2 + 3 * parameters::lambda * parameters::lambda);
+    double l = parameters::lambda;
+    double L = parameters::symmetrical::Lambda;
+    double r = parameters::symmetrical::rho;
+    double c1 = parameters::c1;
+    double c2 = parameters::c2;
 
+
+//    double H = (1 + 3.0 * l * l / 2) * (x[0] * x[0] + x[1] * x[1]) + (1 + 3.0 * r * r * l * l / L / L) * x[2] * x[2];
+
+
+//    double good_advice = fru_0 / sqrt(2.0) - sqrt(3.0) * r / c1 * \
+//                         sqrt(3 * l * l / r / r + L * L) / sqrt(3 * l * l + 2) * \
+//                         (l * l / (3 * l * l / r / r + L * L) * H + c2 * c2 / 2 / l / l);
+
+//    double l = parameters::lambda;
+//    double good_advice = fru_0 / sqrt(2.0) - sqrt(2.0) * fru_1 * sqrt(H / (3.0 * l * l + 2.0));
+//    qDebug() << "H" << H << '\n';
+//    qDebug() << "good_advice" << good_advice << '\n';
+    double v_s = sqrt(x[0] * x[0] + x[1] * x[1]);
+    double good_advice = fru_0 / sqrt(2.0) - v_s / sqrt(2.0) * sqrt(fru_2*fru_2 *x[2]*x[2] + fru_1 * fru_1);
     P_advice.append(good_advice);
 }
 
@@ -152,7 +166,8 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
                     QVector<double> &theta_vec,
                     QVector<double> &P_real, QVector<double> &P_advice,
-                    QVector<double> &N_1, QVector<double> &N_2, QVector<double> &N_3)
+                    QVector<double> &N_1, QVector<double> &N_2, QVector<double> &N_3,
+                    QVector<double> &U1, QVector<double> &U2, QVector<double> &U3)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
@@ -179,6 +194,9 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
     theta_vec.append(xl[5]);
     compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice);
     compute_N(tl, xl, control_minus, control_plus, t_sw, N_1, N_2, N_3);
+    U1.append(control_minus[0]);
+    U2.append(control_minus[1]);
+    U3.append(control_minus[2]);
 
     while (tl + h < t_right || last_flag)
     {
@@ -250,6 +268,9 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
             theta_vec.append(xl[5]);
             compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice);
             compute_N(tl, xl, control_minus, control_plus, t_sw, N_1, N_2, N_3);
+            U1.append(control_minus[0]);
+            U2.append(control_minus[1]);
+            U3.append(control_minus[2]);
 
             coefmax = 5;
 
@@ -281,6 +302,9 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                 theta_vec.append(xl[5]);
                 compute_P(tl, xl, control_minus, control_plus, t_sw, P_real, P_advice);
                 compute_N(tl, xl, control_minus, control_plus, t_sw, N_1, N_2, N_3);
+                U1.append(control_minus[0]);
+                U2.append(control_minus[1]);
+                U3.append(control_minus[2]);
 
                 coefmax = 5;
             }

@@ -43,6 +43,11 @@ private:
     QVector<double> y;
     QVector<double> theta;
 
+
+    QVector<double> U1;
+    QVector<double> U2;
+    QVector<double> U3;
+
     Vector<6> initial_values, final_values;
     double t_sw, T;
 

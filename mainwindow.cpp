@@ -9,9 +9,9 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->lineEdit_nu_1_0->setText("0");
-    ui->lineEdit_nu_2_0->setText("0");
-    ui->lineEdit_nu_3_0->setText("0");
+//    ui->lineEdit_nu_1_0->setText("0");
+//    ui->lineEdit_nu_2_0->setText("0");
+//    ui->lineEdit_nu_3_0->setText("0");
 //    ui->lineEdit_t_1->setText("5");
 //    ui->lineEdit_t_2->setText("10");
 //    ui->lineEdit_U_1_1->setText("80");
@@ -108,19 +108,25 @@ void MainWindow::on_pushButton_compute_clicked()
         x.clear();
         y.clear();
         theta.clear();
+
+        U1.clear();
+        U2.clear();
+        U3.clear();
     }
 
     DOPRI8_symmetrical_plot (0, T, initial_values, control_1,
                              control_2, t_sw,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                              x_symm, y_symm, theta_symm,
-                             P_real, P_advice, N_1, N_2, N_3);
+                             P_real, P_advice, N_1, N_2, N_3, U1, U2, U3);
 
     if (plotted)
     {
         ui->PlotWidget_trajectory->clearPlottables();
         ui->PlotWidget_P->clearPlottables();
         ui->PlotWidget_N->clearPlottables();
+        ui->PlotWidget_U->clearPlottables();
+        ui->PlotWidget_nu->clearPlottables();
     }
 
     trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
@@ -128,8 +134,8 @@ void MainWindow::on_pushButton_compute_clicked()
 
     QVector<QCPCurveData> data_minus_symm, data_plus_symm;
 
-    QPen pen_minus_symm(Qt::blue);
-    QPen pen_plus_symm(Qt::magenta);
+    QPen pen_minus_symm(Qt::gray);
+    QPen pen_plus_symm(Qt::gray);
     trajectory_minus_symm->setPen(pen_minus_symm);
     trajectory_plus_symm->setPen(pen_plus_symm);
 
@@ -146,26 +152,26 @@ void MainWindow::on_pushButton_compute_clicked()
     trajectory_minus_symm->data()->set(data_minus_symm, true);
     trajectory_plus_symm->data()->set(data_plus_symm, true);
 
-    double g = 9.81;
-    double bad_advice_1 = (-3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
-                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                            3 * parameters::c2 * nu_1_symm[i_boundary] / 2 + 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
-                            g*parameters::symmetrical::rho) / parameters::c1;
+//    double g = 9.81;
+//    double bad_advice_1 = (-3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
+//                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                            3 * parameters::c2 * nu_1_symm[i_boundary] / 2 + 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
+//                            g*parameters::symmetrical::rho) / parameters::c1;
 
-    double bad_advice_2 = (3 * parameters::lambda * parameters::lambda / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] + \
-                            3 * parameters::c2 * nu_1_symm[i_boundary] - \
-                            g*parameters::symmetrical::rho) / parameters::c1;
+//    double bad_advice_2 = (3 * parameters::lambda * parameters::lambda / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] + \
+//                            3 * parameters::c2 * nu_1_symm[i_boundary] - \
+//                            g*parameters::symmetrical::rho) / parameters::c1;
 
-    double bad_advice_3 = (3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
-                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
-                            3 * parameters::c2 * nu_1_symm[0] / 2 - 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
-                            g*parameters::symmetrical::rho) / parameters::c1;
+//    double bad_advice_3 = (3 * sqrt(3) * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * \
+//                           nu_1_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                           3 * parameters::lambda * parameters::lambda / 2 / parameters::symmetrical::Lambda * nu_2_symm[i_boundary] * nu_3_symm[i_boundary] - \
+//                            3 * parameters::c2 * nu_1_symm[0] / 2 - 3 * sqrt(3) * parameters::c2 * nu_2_symm[i_boundary] /2 - \
+//                            g*parameters::symmetrical::rho) / parameters::c1;
 
-    qDebug() << "try U_1_plus + U_2_plus - 2 U_3_plus > " << bad_advice_1 << " for more fun result" << '\n';
-    qDebug() << "try U_1_plus - 2 U_2_plus + U_3_plus > " << bad_advice_2 << " for more fun result" << '\n';
-    qDebug() << "try -2 U_1_plus + U_2_plus + U_3_plus > " << bad_advice_3 << " for more fun result" << '\n';
+//    qDebug() << "try U_1_plus + U_2_plus - 2 U_3_plus > " << bad_advice_1 << " for more fun result" << '\n';
+//    qDebug() << "try U_1_plus - 2 U_2_plus + U_3_plus > " << bad_advice_2 << " for more fun result" << '\n';
+//    qDebug() << "try -2 U_1_plus + U_2_plus + U_3_plus > " << bad_advice_3 << " for more fun result" << '\n';
 
     double x_max = *std::max_element(x_symm.begin(), x_symm.end());
     double x_min = *std::min_element(x_symm.begin(), x_symm.end());
@@ -180,18 +186,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_t_sw_"
-                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
-                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
-                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
-                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
-                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
-                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
-                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
-                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
-                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
-                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
-                                + ".pdf");
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_explicit.pdf");
 
     double P_max_1 = *std::max_element(P_real.begin(), P_real.end());
     double P_max_2 = *std::max_element(P_advice.begin(), P_advice.end());
@@ -215,19 +210,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_P->yAxis->setLabel("P");
     ui->PlotWidget_P->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_P->replot();
-
-    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_"
-                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
-                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
-                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
-                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
-                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
-                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
-                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
-                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
-                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
-                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
-                                + ".pdf");
+    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_explicit.pdf");
 
     double N_max_1 = *std::max_element(N_1.begin(), N_1.end());
     double N_max_2 = *std::max_element(N_2.begin(), N_2.end());
@@ -262,18 +245,77 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N->replot();
 
-    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_"
-                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
-                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
-                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
-                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
-                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
-                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
-                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
-                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
-                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
-                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
-                                + ".pdf");
+    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_explicit.pdf");
+
+    double U_max_1 = *std::max_element(U1.begin(), U1.end());
+    double U_max_2 = *std::max_element(U2.begin(), U2.end());
+    double U_max_3 = *std::max_element(U3.begin(), U3.end());
+    double U_min_1 = *std::min_element(U1.begin(), U1.end());
+    double U_min_2 = *std::min_element(U2.begin(), U2.end());
+    double U_min_3 = *std::min_element(U3.begin(), U3.end());
+    double U_max = std::max(std::max(U_max_1, U_max_2), U_max_3);
+    double U_min = std::min(std::min(U_min_1, U_min_2), U_min_3);
+
+    ui->PlotWidget_U->legend->setVisible(true);
+
+    ui->PlotWidget_U->addGraph();
+    ui->PlotWidget_U->graph(0)->setData(t_symm, U1);
+    ui->PlotWidget_U->graph(0)->setName("U_1");
+    ui->PlotWidget_U->graph(0)->setPen(QPen(Qt::blue));
+
+    ui->PlotWidget_U->addGraph();
+    ui->PlotWidget_U->graph(1)->setData(t_symm, U2);
+    ui->PlotWidget_U->graph(1)->setName("U_2");
+    ui->PlotWidget_U->graph(1)->setPen(QPen(Qt::magenta));
+
+    ui->PlotWidget_U->addGraph();
+    ui->PlotWidget_U->graph(2)->setData(t_symm, U3);
+    ui->PlotWidget_U->graph(2)->setName("U_3");
+    ui->PlotWidget_U->graph(2)->setPen(QPen(Qt::cyan));
+
+    ui->PlotWidget_U->xAxis->setRange(0, T);
+    ui->PlotWidget_U->yAxis->setRange(U_min - 0.05, U_max + 0.05);
+    ui->PlotWidget_U->xAxis->setLabel("t");
+    ui->PlotWidget_U->yAxis->setLabel("U");
+    ui->PlotWidget_U->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_U->replot();
+
+    ui->PlotWidget_U->savePdf("../custom-omni-wheel-vehicle-control/PICS/U_explicit.pdf");
+
+    double nu_max_1 = *std::max_element(nu_1_symm.begin(), nu_1_symm.end());
+    double nu_max_2 = *std::max_element(nu_2_symm.begin(), nu_2_symm.end());
+    double nu_max_3 = *std::max_element(nu_3_symm.begin(), nu_3_symm.end());
+    double nu_min_1 = *std::min_element(nu_1_symm.begin(), nu_1_symm.end());
+    double nu_min_2 = *std::min_element(nu_2_symm.begin(), nu_2_symm.end());
+    double nu_min_3 = *std::min_element(nu_3_symm.begin(), nu_3_symm.end());
+    double nu_max = std::max(std::max(nu_max_1, nu_max_2), nu_max_3);
+    double nu_min = std::min(std::min(nu_min_1, nu_min_2), nu_min_3);
+
+    ui->PlotWidget_nu->legend->setVisible(true);
+
+    ui->PlotWidget_nu->addGraph();
+    ui->PlotWidget_nu->graph(0)->setData(t_symm, nu_1_symm);
+    ui->PlotWidget_nu->graph(0)->setName("nu_1");
+    ui->PlotWidget_nu->graph(0)->setPen(QPen(Qt::blue));
+
+    ui->PlotWidget_nu->addGraph();
+    ui->PlotWidget_nu->graph(1)->setData(t_symm, nu_2_symm);
+    ui->PlotWidget_nu->graph(1)->setName("nu_2");
+    ui->PlotWidget_nu->graph(1)->setPen(QPen(Qt::magenta));
+
+    ui->PlotWidget_nu->addGraph();
+    ui->PlotWidget_nu->graph(2)->setData(t_symm, nu_3_symm);
+    ui->PlotWidget_nu->graph(2)->setName("nu_3");
+    ui->PlotWidget_nu->graph(2)->setPen(QPen(Qt::cyan));
+
+    ui->PlotWidget_nu->xAxis->setRange(0, T);
+    ui->PlotWidget_nu->yAxis->setRange(nu_min - 0.05, nu_max + 0.05);
+    ui->PlotWidget_nu->xAxis->setLabel("t");
+    ui->PlotWidget_nu->yAxis->setLabel("nu");
+    ui->PlotWidget_nu->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_nu->replot();
+
+    ui->PlotWidget_nu->savePdf("../custom-omni-wheel-vehicle-control/PICS/nu_explicit.pdf");
 
     plotted = true;
 }
