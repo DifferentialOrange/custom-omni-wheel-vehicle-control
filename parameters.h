@@ -13,40 +13,17 @@ namespace precision
     const double N_step = 0.1;
 }
 
-namespace parameters
+namespace parameters2
 {
-    const double lambda  = 1.0 / 3;
-
-    const double c1      = 1e-2;
-    const double c2      = 2.5e-4;
-
-    namespace symmetrical
-    {
-        const double Lambda  = 5.0 / 4;
-
-        const double rho     = 3.0 / 2;
-
-        const double A1      = 1 + 3 * lambda * lambda / 2;
-        const double A2      = 1 + 3 * lambda * lambda / 2;
-        const double A3      = 1 + 3 * rho * rho * lambda * lambda / (Lambda * Lambda);
-        const double L       = 1 / (Lambda * A1); //L1 = L2 == L
-
-        const double kappa   = 3 * c2 / (2 * A1); //kappa1 == kappa2 == kappa
-        const double kappa3  = 3 * c2 * rho * rho / (Lambda * Lambda * A3);
-
-        const std::array<double, 3> alpha = {- M_PI / 6, M_PI / 2, 7 * M_PI / 6};
-        const std::array<double, 3> beta = alpha;
-        const std::array<double, 3> delta = {rho, rho, rho};
-        const double Delta = 0;
-    }
-
-    namespace final
-    {
-        const double Lambda = 5.0 / 4;
-        const double Delta = 0.5;
-
-        const std::array<double, 3> alpha = {0, M_PI / 2, M_PI};
-        const std::array<double, 3> beta = alpha;
-        const std::array<double, 3> delta = {5.0 / 4, 2.0, 5.0 / 4};
-    }
+    const double m = 3;
+    const double R = 0.05;
+    const double h = 0.05;
+    const double rho = 0.15;
+    const double Lambda = sqrt(0.05);
+    const double lambda = sqrt(5e-4);
+    const double c_1 = 0.01;
+    const double c_2 = 2.5 * 1e-4;
+    const std::array<double, 3> alpha = {- M_PI / 6, M_PI / 2, 7 * M_PI / 6};
+    const std::array<double, 3> beta = alpha;
+    const double g = 9.81;
 }

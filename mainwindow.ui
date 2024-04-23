@@ -34,7 +34,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>10</string>
+     <string>0</string>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -73,7 +73,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>4</string>
+     <string>0</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_3">
@@ -99,7 +99,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>-1</string>
+     <string>0</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -307,7 +307,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>3.75</string>
+     <string>16</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_compute">

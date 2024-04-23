@@ -124,6 +124,7 @@ void MainWindow::on_pushButton_compute_clicked()
     {
         ui->PlotWidget_trajectory->clearPlottables();
         ui->PlotWidget_P->clearPlottables();
+        ui->PlotWidget_PT->clearPlottables();
         ui->PlotWidget_N->clearPlottables();
         ui->PlotWidget_U->clearPlottables();
         ui->PlotWidget_nu->clearPlottables();
@@ -141,13 +142,41 @@ void MainWindow::on_pushButton_compute_clicked()
 
     int i = 0;
     int i_boundary;
-    for (i = 0; t_symm[i] < t_sw; i++)
+    bool first_half = false;
+    bool second_half = false;
+    int current_lap = 0;
+    for (i = 0; t_symm[i] < t_sw; i++) {
         data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+        if (y_symm[i] >= 0 && !first_half){
+            current_lap++;
+            first_half = true;
+            second_half = false;
+        }
+        if (y_symm[i] < 0 && !second_half){
+            second_half = true;
+            first_half = false;
+        }
+    }
+
 
     i_boundary = i;
 
-    for (; i < x_symm.length(); i++)
+    for (; i < x_symm.length(); i++){
         data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+        if (y_symm[i] >= 0 && !first_half){
+            current_lap++;
+            first_half = true;
+            second_half = false;
+        }
+        if (y_symm[i] < 0 && !second_half){
+            second_half = true;
+            first_half = false;
+        }
+    }
+
+    qDebug() << "stopped on the " << current_lap << " lap" << '\n';
+    qDebug() << "x " << x_symm[x_symm.length() - 1] << "y " << y_symm[x_symm.length() - 1] << '\n';
+
 
     trajectory_minus_symm->data()->set(data_minus_symm, true);
     trajectory_plus_symm->data()->set(data_plus_symm, true);
@@ -186,7 +215,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_explicit.pdf");
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_circles.pdf");
 
     double P_max_1 = *std::max_element(P_real.begin(), P_real.end());
     double P_max_2 = *std::max_element(P_advice.begin(), P_advice.end());
@@ -212,9 +241,10 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_P->yAxis->setRange(- 10, P_max + 10);
     ui->PlotWidget_P->xAxis->setLabel("t");
     ui->PlotWidget_P->yAxis->setLabel("P");
+    ui->PlotWidget_P->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignBottom);
     ui->PlotWidget_P->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_P->replot();
-    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_V_explicit.pdf");
+    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_V_circles.pdf");
 
     ui->PlotWidget_PT->legend->setVisible(true);
 
@@ -232,9 +262,10 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_PT->yAxis->setRange(- 10, P_max + 10);
     ui->PlotWidget_PT->xAxis->setLabel("t");
     ui->PlotWidget_PT->yAxis->setLabel("P");
+    ui->PlotWidget_PT->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignBottom);
     ui->PlotWidget_PT->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_PT->replot();
-    ui->PlotWidget_PT->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_T_explicit.pdf");
+    ui->PlotWidget_PT->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_T_circles.pdf");
 
     double N_max_1 = *std::max_element(N_1.begin(), N_1.end());
     double N_max_2 = *std::max_element(N_2.begin(), N_2.end());
@@ -269,7 +300,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N->replot();
 
-    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_explicit.pdf");
+    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_circles.pdf");
 
     double U_max_1 = *std::max_element(U1.begin(), U1.end());
     double U_max_2 = *std::max_element(U2.begin(), U2.end());
@@ -304,7 +335,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_U->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_U->replot();
 
-    ui->PlotWidget_U->savePdf("../custom-omni-wheel-vehicle-control/PICS/U_explicit.pdf");
+    ui->PlotWidget_U->savePdf("../custom-omni-wheel-vehicle-control/PICS/U_circles.pdf");
 
     double nu_max_1 = *std::max_element(nu_1_symm.begin(), nu_1_symm.end());
     double nu_max_2 = *std::max_element(nu_2_symm.begin(), nu_2_symm.end());
@@ -339,7 +370,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_nu->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_nu->replot();
 
-    ui->PlotWidget_nu->savePdf("../custom-omni-wheel-vehicle-control/PICS/nu_explicit.pdf");
+    ui->PlotWidget_nu->savePdf("../custom-omni-wheel-vehicle-control/PICS/nu_circles.pdf");
 
     plotted = true;
 }

@@ -26,24 +26,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
     mainwindow.cpp \
     main.cpp \
-    integrate.cpp \
     qcustomplot.cpp \
-    predict.cpp \
-    symm_functions.cpp \
-    DOPRI8_symmetrical_plot.cpp \
-    DOPRI8_final_plot.cpp \
-    DOPRI8_custom.cpp \
-    custom_functions.cpp \
-    control_solve.cpp \
-    custom_control_find.cpp
+    DOPRI8_symmetrical_plot.cpp
 
 HEADERS += \
     mainwindow.h \
     include.h \
     qcustomplot.h \
     vector.h \
-    custom_functions.h \
-    symm_functions.h \
     parameters.h
 
 FORMS += \
