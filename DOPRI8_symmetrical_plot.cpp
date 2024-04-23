@@ -57,6 +57,38 @@
 //    return U;
 //}
 
+Vector<3> get_desired_control(double dnu_1, double dnu_2, double dnu_3,
+                           double nu_1, double nu_2, double nu_3)
+{
+    double L = parameters2::Lambda;
+    double l = parameters2::lambda;
+
+    double m = parameters2::m;
+    double h = parameters2::h;
+    double R = parameters2::R;
+    double rho = parameters2::rho;
+
+    double c_1 = parameters2::c_1;
+    double c_2 = parameters2::c_2;
+
+    double w1 = (2 * m * R * R + 3 * l * l) / (c_1 * R) * (dnu_1 - 2 * m * R * R / (2 * m * R * R + 3 * l * l) * nu_2 * nu_3 / L + \
+                                                           3 * c_2 / (2 * m * R * R + 3 * l * l) * nu_1);
+    double w2 = (2 * m * R * R + 3 * l * l) / (sqrt(3.0) * c_1 * R) * (dnu_2 + 2 * m * R * R / (2 * m * R * R + 3 * l * l) * nu_1 * nu_3 / L + \
+                                                                       3 * c_2 / (2 * m * R * R + 3 * l * l) * nu_2);
+    double w3 = (L * L * R * R + 3 * l * l * rho * rho) / (c_1 * L * rho * R) * (dnu_3 + 3 * c_2 * rho * rho / (L * L * R * R + 3 * l * l * rho * rho) * nu_3);
+
+    double U1 = w1 / 6 + w2 / 2 + w3 / 3;
+    double U2 = - w1 / 3 + w3 / 3;
+    double U3 = w1 / 6 - w2 / 2 + w3 / 3;
+
+    Vector<3> U;
+        U[0] = U1;
+        U[1] = U2;
+        U[2] = U3;
+
+        return U;
+}
+
 Vector<3> compute_U(double t) {
     double eps_0 = 0.04;
     double R_traj = 1;
@@ -78,15 +110,7 @@ Vector<3> compute_U(double t) {
     double dnu_2 = R_traj / L * dnu_3;
     double nu_2 = R_traj / L * nu_3;
 
-    double w1 = (2 * m * R * R + 3 * l * l) / (c_1 * R) * (- 2 * m * R * R / (2 * m * R * R + 3 * l * l) * nu_2 * nu_3 / L);
-    double w2 = (2 * m * R * R + 3 * l * l) / (sqrt(3.0) * c_1 * R) * (dnu_2 + 3 * c_2 / (2 * m * R * R + 3 * l * l) * nu_2);
-    double w3 = (L * L * R * R + 3 * l * l * rho * rho) / (c_1 * L * rho * R) * (dnu_3 + 3 * c_2 * rho * rho / (L * L * R * R + 3 * l * l * rho * rho) * nu_3);
-
-    double U1 = w1 / 6 + w2 / 2 + w3 / 3;
-    double U2 = - w1 / 3 + w3 / 3;
-    double U3 = w1 / 6 - w2 / 2 + w3 / 3;
-
-    qDebug() << "U1 " << U1 << "U2 " << U2 << "U3 " << U3 << '\n';
+//    qDebug() << "U1 " << U1 << "U2 " << U2 << "U3 " << U3 << '\n';
 
     //    Vector<3> W;
     //    W = compute_W(t);
@@ -102,12 +126,15 @@ Vector<3> compute_U(double t) {
 
     //    return U;
 
-    Vector<3> U;
-    U[0] = U1;
-    U[1] = U2;
-    U[2] = U3;
+//    Vector<3> U;
+//    U[0] = U1;
+//    U[1] = U2;
+//    U[2] = U3;
+//    U[0] = -48;
+//    U[1] = 0;
+//    U[2] = 48;
 
-    return U;
+    return get_desired_control(0, dnu_2, dnu_3, 0, nu_2, nu_3);
 }
 
 
