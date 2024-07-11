@@ -379,8 +379,8 @@
    <widget class="QCustomPlot" name="PlotWidget_U" native="true">
     <property name="geometry">
      <rect>
-      <x>450</x>
-      <y>750</y>
+      <x>1330</x>
+      <y>410</y>
       <width>431</width>
       <height>331</height>
      </rect>

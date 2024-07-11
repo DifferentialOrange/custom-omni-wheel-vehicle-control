@@ -96,6 +96,7 @@ void MainWindow::on_pushButton_compute_clicked()
 
         P_real.clear();
         P_advice.clear();
+        PT_advice.clear();
 
         N_1.clear();
         N_2.clear();
@@ -329,7 +330,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_U->graph(2)->setPen(QPen(Qt::cyan));
 
     ui->PlotWidget_U->xAxis->setRange(0, T);
-    ui->PlotWidget_U->yAxis->setRange(U_min - 0.05, U_max + 0.05);
+    ui->PlotWidget_U->yAxis->setRange(U_min - 1, U_max + 1);
     ui->PlotWidget_U->xAxis->setLabel("t");
     ui->PlotWidget_U->yAxis->setLabel("U");
     ui->PlotWidget_U->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);

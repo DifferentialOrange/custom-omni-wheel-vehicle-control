@@ -17,7 +17,7 @@ namespace parameters2
 {
     const double m = 3;
     const double R = 0.05;
-    const double h = 0.05;
+    const double h = 0.2;
     const double rho = 0.15;
     const double Lambda = sqrt(0.05);
     const double lambda = sqrt(5e-4);

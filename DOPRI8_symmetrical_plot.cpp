@@ -89,6 +89,45 @@ Vector<3> get_desired_control(double dnu_1, double dnu_2, double dnu_3,
         return U;
 }
 
+Vector<6> get_dangerous(double t) {
+    double dH = 50;
+    double H = dH * (t + 1e-13);
+
+    double L = parameters2::Lambda;
+    double l = parameters2::lambda;
+
+    double m = parameters2::m;
+    double h = parameters2::h;
+    double R = parameters2::R;
+    double rho = parameters2::rho;
+
+
+    double c_1 = parameters2::c_1;
+    double c_2 = parameters2::c_2;
+
+    double dnu_3 = 0.03;
+    double nu_3 = dnu_3 * t;
+
+    double k = sqrt(2.0) * l * l * L / 2.0 * sqrt(L * L * R * R + 3 * l * l * rho * rho) / sqrt(2 * m * R * R + 3 * l * l);
+
+    double nu_1 = - l * l * nu_3 / 2.0 / k;
+    double dnu_1 = - l * l * dnu_3 / 2.0 / k;
+
+    double nu_2 = - sqrt(3.0) * l * l * nu_3 / 2.0 / k;
+    double dnu_2 = - sqrt(3.0) * l * l * dnu_3 / 2.0 / k;
+
+    Vector<6> res;
+    res[0] = dnu_1;
+    res[1] = dnu_2;
+    res[2] = dnu_3;
+    res[3] = nu_1;
+    res[4] = nu_2;
+    res[5] = nu_3;
+
+    qDebug() << res[0] << '\n';
+    return res;
+}
+
 Vector<3> compute_U(double t) {
     double eps_0 = 0.04;
     double R_traj = 1;
@@ -134,7 +173,9 @@ Vector<3> compute_U(double t) {
 //    U[1] = 0;
 //    U[2] = 48;
 
+//    auto dang = get_dangerous(t);
     return get_desired_control(0, dnu_2, dnu_3, 0, nu_2, nu_3);
+//    return {-20, 30, -12};
 }
 
 
@@ -224,7 +265,7 @@ void compute_P(double t, Vector<6> x, QVector<double> &P_real, QVector<double> &
     P_real.append(sqrt(U_1 * U_1 + U_2 * U_2 + U_3 * U_3));
 
     double v_s = sqrt(x[0] * x[0] + x[1] * x[1]);
-    double v_advice = fru_0 / sqrt(2.0) - v_s / sqrt(2.0) * sqrt(fru_2 * fru_2 * x[2] * x[2] * L * L + fru_1 * fru_1);
+    double v_advice = fru_0 / sqrt(2.0) - v_s / sqrt(2.0) * sqrt(fru_2 * fru_2 * x[2] * x[2] + fru_1 * fru_1);
     P_advice.append(std::max(v_advice, 0.0));
 
     double H = (m + 3.0 * l * l / 2 / R / R) * (x[0] * x[0] + x[1] * x[1]) + (1 + 3.0 * rho * rho * l * l / L / L / R / R) * x[2] * x[2];
