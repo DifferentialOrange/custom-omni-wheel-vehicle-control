@@ -22,18 +22,18 @@ public:
 
 private slots:
     void on_pushButton_compute_clicked();
-    void on_pushButton_generate_clicked();
 
 private:
     Ui::MainWindow *ui;
 
-    QVector<double> t_symm;
-    QVector<double> nu_1_symm;
-    QVector<double> nu_2_symm;
-    QVector<double> nu_3_symm;
-    QVector<double> x_symm;
-    QVector<double> y_symm;
-    QVector<double> theta_symm;
+    QVector<double> t_noeps;
+    QVector<double> nu_1_noeps;
+    QVector<double> nu_2_noeps;
+    QVector<double> nu_3_noeps;
+    QVector<double> x_noeps;
+    QVector<double> y_noeps;
+    QVector<double> theta_noeps;
+    QVector<double> chi_2_noeps;
 
     QVector<double> t;
     QVector<double> nu_1;
@@ -42,23 +42,13 @@ private:
     QVector<double> x;
     QVector<double> y;
     QVector<double> theta;
+    QVector<double> chi_2;
 
-
-    QVector<double> U1;
-    QVector<double> U2;
-    QVector<double> U3;
-
-    Vector<6> initial_values, final_values;
-    double t_sw, T;
-
-    QVector<double> P_real, P_advice, PT_advice;
-    QVector<double> N_1, N_2, N_3;
+    double T;
 
     bool plotted;
-    QCPCurve *trajectory_minus_symm;
-    QCPCurve *trajectory_plus_symm;
-    QCPCurve *trajectory_minus;
-    QCPCurve *trajectory_plus;
+    QCPCurve *trajectory_noeps;
+    QCPCurve *trajectory_eps;
 };
 
 #endif // MAINWINDOW_H
