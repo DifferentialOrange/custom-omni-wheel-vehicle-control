@@ -132,8 +132,8 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->xAxis->setLabel("x");
     ui->PlotWidget_trajectory->yAxis->setLabel("y");
 
-    trajectory_noeps->setName("no eps");
-    trajectory_eps->setName("eps");
+    trajectory_noeps->setName("e^2 = 0 kg*r^2");
+    trajectory_eps->setName("e^2 = 4*10^-5 kg*r");
 
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
@@ -144,12 +144,12 @@ void MainWindow::on_pushButton_compute_clicked()
 
     ui->PlotWidget_nu_1->addGraph();
     ui->PlotWidget_nu_1->graph(0)->setData(t_noeps, nu_1_noeps);
-    ui->PlotWidget_nu_1->graph(0)->setName("no eps");
+    ui->PlotWidget_nu_1->graph(0)->setName("e^2 = 0 kg*r^2");
     ui->PlotWidget_nu_1->graph(0)->setPen(pen_noeps);
 
     ui->PlotWidget_nu_1->addGraph();
     ui->PlotWidget_nu_1->graph(1)->setData(t, nu_1);
-    ui->PlotWidget_nu_1->graph(1)->setName("eps");
+    ui->PlotWidget_nu_1->graph(1)->setName("e^2 = 4*10^-5 kg*r");
     ui->PlotWidget_nu_1->graph(1)->setPen(pen_eps);
 
     double nu_1_max_1 = *std::max_element(nu_1.begin(), nu_1.end());
@@ -173,12 +173,12 @@ void MainWindow::on_pushButton_compute_clicked()
 
     ui->PlotWidget_nu_2->addGraph();
     ui->PlotWidget_nu_2->graph(0)->setData(t_noeps, nu_2_noeps);
-    ui->PlotWidget_nu_2->graph(0)->setName("no eps");
+    ui->PlotWidget_nu_2->graph(0)->setName("e^2 = 0 kg*r^2");
     ui->PlotWidget_nu_2->graph(0)->setPen(pen_noeps);
 
     ui->PlotWidget_nu_2->addGraph();
     ui->PlotWidget_nu_2->graph(1)->setData(t, nu_2);
-    ui->PlotWidget_nu_2->graph(1)->setName("eps");
+    ui->PlotWidget_nu_2->graph(1)->setName("e^2 = 4*10^-5 kg*r");
     ui->PlotWidget_nu_2->graph(1)->setPen(pen_eps);
 
     double nu_2_max_1 = *std::max_element(nu_2.begin(), nu_2.end());
@@ -197,6 +197,64 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_nu_2->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_nu_2->replot();
     ui->PlotWidget_nu_2->savePdf("../custom-omni-wheel-vehicle-control/PICS/massive_nu_2.pdf");
+
+    ui->PlotWidget_nu_3->legend->setVisible(true);
+
+    ui->PlotWidget_nu_3->addGraph();
+    ui->PlotWidget_nu_3->graph(0)->setData(t_noeps, nu_3_noeps);
+    ui->PlotWidget_nu_3->graph(0)->setName("e^2 = 0 kg*r^2");
+    ui->PlotWidget_nu_3->graph(0)->setPen(pen_noeps);
+
+    ui->PlotWidget_nu_3->addGraph();
+    ui->PlotWidget_nu_3->graph(1)->setData(t, nu_3);
+    ui->PlotWidget_nu_3->graph(1)->setName("e^2 = 4*10^-5 kg*r");
+    ui->PlotWidget_nu_3->graph(1)->setPen(pen_eps);
+
+    double nu_3_max_1 = *std::max_element(nu_3.begin(), nu_3.end());
+    double nu_3_max_2 = *std::max_element(nu_3_noeps.begin(), nu_3_noeps.end());
+    double nu_3_max = std::max(nu_3_max_1, nu_3_max_2);
+    double nu_3_min_1 = *std::min_element(nu_3.begin(), nu_3.end());
+    double nu_3_min_2 = *std::min_element(nu_3_noeps.begin(), nu_3_noeps.end());
+    double nu_3_min = std::min(nu_3_min_1, nu_3_min_2);
+
+
+    ui->PlotWidget_nu_3->xAxis->setRange(0, T);
+    ui->PlotWidget_nu_3->yAxis->setRange(nu_3_min - (nu_3_max - nu_3_min) * 0.05, nu_3_max + (nu_3_max - nu_3_min) * 0.05);
+    ui->PlotWidget_nu_3->xAxis->setLabel("t");
+    ui->PlotWidget_nu_3->yAxis->setLabel("nu_3");
+    ui->PlotWidget_nu_3->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignTop);
+    ui->PlotWidget_nu_3->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_nu_3->replot();
+    ui->PlotWidget_nu_3->savePdf("../custom-omni-wheel-vehicle-control/PICS/massive_nu_3.pdf");
+
+    ui->PlotWidget_chi_2->legend->setVisible(true);
+
+    ui->PlotWidget_chi_2->addGraph();
+    ui->PlotWidget_chi_2->graph(0)->setData(t_noeps, chi_2_noeps);
+    ui->PlotWidget_chi_2->graph(0)->setName("e^2 = 0 kg*r^2");
+    ui->PlotWidget_chi_2->graph(0)->setPen(pen_noeps);
+
+    ui->PlotWidget_chi_2->addGraph();
+    ui->PlotWidget_chi_2->graph(1)->setData(t, chi_2);
+    ui->PlotWidget_chi_2->graph(1)->setName("e^2 = 4*10^-5 kg*r");
+    ui->PlotWidget_chi_2->graph(1)->setPen(pen_eps);
+
+    double chi_2_max_1 = *std::max_element(chi_2.begin(), chi_2.end());
+    double chi_2_max_2 = *std::max_element(chi_2_noeps.begin(), chi_2_noeps.end());
+    double chi_2_max = std::max(chi_2_max_1, chi_2_max_2);
+    double chi_2_min_1 = *std::min_element(chi_2.begin(), chi_2.end());
+    double chi_2_min_2 = *std::min_element(chi_2_noeps.begin(), chi_2_noeps.end());
+    double chi_2_min = std::min(chi_2_min_1, chi_2_min_2);
+
+
+    ui->PlotWidget_chi_2->xAxis->setRange(0, T);
+    ui->PlotWidget_chi_2->yAxis->setRange(chi_2_min - (chi_2_max - chi_2_min) * 0.05, chi_2_max + (chi_2_max - chi_2_min) * 0.05);
+    ui->PlotWidget_chi_2->xAxis->setLabel("t");
+    ui->PlotWidget_chi_2->yAxis->setLabel("chi_2");
+    ui->PlotWidget_chi_2->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignTop);
+    ui->PlotWidget_chi_2->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_chi_2->replot();
+    ui->PlotWidget_chi_2->savePdf("../custom-omni-wheel-vehicle-control/PICS/massive_chi_2.pdf");
 
     plotted = true;
 }
