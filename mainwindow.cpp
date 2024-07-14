@@ -102,6 +102,8 @@ void MainWindow::on_pushButton_compute_clicked()
     QVector<double> tv, detv;
 
     int i = 0;
+    tv.append(0);
+    detv.append(0);
     for (double t_sw = 0.01; t_sw < T - 0.01; t_sw += 0.1, ++i){
         double det = second_system_det(t_sw, T, initial_values[0], final_values[0],
                 initial_values[1], final_values[1], initial_values[2], final_values[2],
@@ -110,16 +112,18 @@ void MainWindow::on_pushButton_compute_clicked()
         tv.append(t_sw);
         detv.append(det);
     }
+    tv.append(T);
+    detv.append(0);
 
     ui->PlotWidget_trajectory->addGraph();
     ui->PlotWidget_trajectory->graph(0)->setData(tv, detv);
 
-    QPen pen(Qt::blue);
+    QPen pen(Qt::magenta);
     pen.setWidth(3);
     ui->PlotWidget_trajectory->graph(0)->setPen(pen);
 
-//    ui->PlotWidget_trajectory->xAxis->setLabel("t_sw");
-//    ui->PlotWidget_trajectory->yAxis->setLabel("det");
+    ui->PlotWidget_trajectory->xAxis->setLabel("t_sw");
+    ui->PlotWidget_trajectory->yAxis->setLabel("det");
     ui->PlotWidget_trajectory->rescaleAxes();
 
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
