@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "include.h"
+#include <float.h>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -27,6 +28,13 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+double e_c_3(double t_sw, double T) {
+    double c_3 = parameters::symmetrical::kappa3;
+    return ((exp(c_3 * t_sw) - exp(c_3 * T)) * (exp(c_3 * t_sw) - exp(c_3 * T)) * t_sw + \
+            (exp(c_3 * t_sw) - 1) * (exp(c_3 * t_sw) - 1) * (T - t_sw)) /
+            (t_sw - t_sw * exp(c_3 * T) - T + exp(c_3 * t_sw)) /
+            (t_sw - t_sw * exp(c_3 * T) - T + exp(c_3 * t_sw));
+}
 
 void MainWindow::on_pushButton_compute_clicked()
 {
@@ -101,19 +109,29 @@ void MainWindow::on_pushButton_compute_clicked()
 
     QVector<double> tv, detv;
 
+    T = 1;
+
     int i = 0;
-    tv.append(0);
-    detv.append(0);
-    for (double t_sw = 0.01; t_sw < T - 0.01; t_sw += 0.1, ++i){
-        double det = second_system_det(t_sw, T, initial_values[0], final_values[0],
-                initial_values[1], final_values[1], initial_values[2], final_values[2],
-                final_values[3], final_values[4], final_values[5]);
-        qDebug() << t_sw << '\n';
+//    tv.append(0);
+//    detv.append(0);
+    for (double t_sw = 0.01; t_sw < T - 0.01; t_sw += 0.001, ++i) {
+        double det = e_c_3(t_sw, T);
         tv.append(t_sw);
         detv.append(det);
     }
-    tv.append(T);
-    detv.append(0);
+//    tv.append(T);
+//    detv.append(0);
+
+    double minv = DBL_MAX;
+    double minarg = -1;
+    for (double t_sw = 0.49; t_sw < 0.51; t_sw += 1e-9) {
+        double v = e_c_3(t_sw, T);
+        if (v < minv) {
+            minarg = t_sw;
+            minv = v;
+        }
+    }
+    qDebug() << "min" << minarg << '\n';
 
     ui->PlotWidget_trajectory->addGraph();
     ui->PlotWidget_trajectory->graph(0)->setData(tv, detv);
@@ -123,23 +141,15 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->graph(0)->setPen(pen);
 
     ui->PlotWidget_trajectory->xAxis->setLabel("t_sw");
-    ui->PlotWidget_trajectory->yAxis->setLabel("det");
+    ui->PlotWidget_trajectory->yAxis->setLabel("e_c_3");
     ui->PlotWidget_trajectory->rescaleAxes();
+    ui->PlotWidget_trajectory->xAxis->setRange(0, T);
 
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/det_"
-                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
-                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
-                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
-                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
-                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
-                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
-                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
-                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
-                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
-                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/e_c_3_T_"
+                                + QString::number(T, 'g', 4)
                                 + ".pdf");
 
     plotted = true;
