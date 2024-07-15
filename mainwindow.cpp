@@ -28,6 +28,14 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+double e_c(double t_sw, double T) {
+    double c = parameters::symmetrical::kappa;
+    return ((exp(c * t_sw) - exp(c * T)) * (exp(c * t_sw) - exp(c * T)) * t_sw + \
+            (exp(c * t_sw) - 1) * (exp(c * t_sw) - 1) * (T - t_sw)) /
+            (t_sw - t_sw * exp(c * T) - T + exp(c * t_sw)) /
+            (t_sw - t_sw * exp(c * T) - T + exp(c * t_sw));
+}
+
 double e_c_3(double t_sw, double T) {
     double c_3 = parameters::symmetrical::kappa3;
     return ((exp(c_3 * t_sw) - exp(c_3 * T)) * (exp(c_3 * t_sw) - exp(c_3 * T)) * t_sw + \
@@ -115,7 +123,7 @@ void MainWindow::on_pushButton_compute_clicked()
 //    tv.append(0);
 //    detv.append(0);
     for (double t_sw = 0.01; t_sw < T - 0.01; t_sw += 0.001, ++i) {
-        double det = e_c_3(t_sw, T);
+        double det = e_c(t_sw, T);
         tv.append(t_sw);
         detv.append(det);
     }
@@ -125,7 +133,7 @@ void MainWindow::on_pushButton_compute_clicked()
     double minv = DBL_MAX;
     double minarg = -1;
     for (double t_sw = 0.49; t_sw < 0.51; t_sw += 1e-9) {
-        double v = e_c_3(t_sw, T);
+        double v = e_c(t_sw, T);
         if (v < minv) {
             minarg = t_sw;
             minv = v;
@@ -141,14 +149,14 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->graph(0)->setPen(pen);
 
     ui->PlotWidget_trajectory->xAxis->setLabel("t_sw");
-    ui->PlotWidget_trajectory->yAxis->setLabel("e_c_3");
+    ui->PlotWidget_trajectory->yAxis->setLabel("e_c");
     ui->PlotWidget_trajectory->rescaleAxes();
     ui->PlotWidget_trajectory->xAxis->setRange(0, T);
 
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/e_c_3_T_"
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/e_c_T_"
                                 + QString::number(T, 'g', 4)
                                 + ".pdf");
 
