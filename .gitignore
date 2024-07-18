@@ -48,3 +48,5 @@ qcustomplot.h
 PICS
 
 VehicleControlPredict_Symmetrical
+
+.venv/*
