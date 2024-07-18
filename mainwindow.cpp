@@ -95,10 +95,9 @@ void MainWindow::on_pushButton_compute_clicked()
     }
 
     std::ofstream file(("max_U_theta_T_"+ QString::number(final_values[5], 'g', 4) + ".txt").toStdString());
-    file << "Writing this to a file.\n";
 
-    for (double T = 1.0; T <= 50.0; T += 1.0) {
-        for (double t_sw = 0.5; t_sw < T; t_sw += 1.0) {
+    for (double T = 0.25; T <= 50.0; T += 0.25) {
+        for (double t_sw = 0.125; t_sw < T; t_sw += 0.25) {
             Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
                     initial_values[1], final_values[1], initial_values[2], final_values[2],
                     final_values[3], final_values[4], final_values[5]);
