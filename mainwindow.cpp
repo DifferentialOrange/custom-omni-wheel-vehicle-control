@@ -107,12 +107,19 @@ void MainWindow::on_pushButton_compute_clicked()
 
     Vector<6> u_symm = control;
 
+    qDebug() << "Energy: " << (control[0] * control[0] + \
+                               control[1] * control[1] + \
+                               control[2] * control[2]) * t_sw + \
+                              (control[3] * control[3] + \
+                               control[4] * control[4] + \
+                               control[5] * control[5]) * (T - t_sw) << "\n";
+
     DOPRI8_symmetrical_plot (0, T, initial_values, {control[0], control[1], control[2]},
                              {control[3], control[4], control[5]}, t_sw,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
                              x_symm, y_symm, theta_symm);
 
-    control = custom_control_find(control, t_sw, T, initial_values, final_values);
+//    control = custom_control_find(control, t_sw, T, initial_values, final_values);
 
     DOPRI8_final_plot (0, T, initial_values, {control[0], control[1], control[2]},
                         {control[3], control[4], control[5]},

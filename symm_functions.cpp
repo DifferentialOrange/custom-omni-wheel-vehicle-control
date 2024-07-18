@@ -95,31 +95,31 @@ double gamma_s_minus_c(double t1, double t, double D3, double W3, double D6)
 
 double u_control_1(double W_control_1, double W_control_2, double W_control_3)
 {
-    return parameters::symmetrical::A1 * W_control_1 / (3 * parameters::c1)
-            + parameters::symmetrical::A2 * W_control_2 / (sqrt(3) * parameters::c1)
+    return parameters::symmetrical::A1 * W_control_1 / (3 * parameters::c1) * parameters::symmetrical::r
+            + parameters::symmetrical::A2 * W_control_2 / (sqrt(3) * parameters::c1) * parameters::symmetrical::r
             + parameters::symmetrical::Lambda * parameters::symmetrical::A3 * W_control_3
-            / (3 * parameters::symmetrical::rho * parameters::c1);
+            / (3 * parameters::symmetrical::rho * parameters::c1) * parameters::symmetrical::r;
 }
 
 double u_control_2(double W_control_1, double W_control_2, double W_control_3)
 {
-    return - 2 * parameters::symmetrical::A1 * W_control_1 / (3 * parameters::c1)
+    return - 2 * parameters::symmetrical::A1 * W_control_1 / (3 * parameters::c1) * parameters::symmetrical::r
             + parameters::symmetrical::Lambda * parameters::symmetrical::A3 * W_control_3
-            / (3 * parameters::symmetrical::rho * parameters::c1);
+            / (3 * parameters::symmetrical::rho * parameters::c1) * parameters::symmetrical::r;
 }
 
 double u_control_3(double W_control_1, double W_control_2, double W_control_3)
 {
-    return parameters::symmetrical::A1 * W_control_1 / (3 * parameters::c1)
-            - parameters::symmetrical::A2 * W_control_2 / (sqrt(3) * parameters::c1)
+    return parameters::symmetrical::A1 * W_control_1 / (3 * parameters::c1) * parameters::symmetrical::r
+            - parameters::symmetrical::A2 * W_control_2 / (sqrt(3) * parameters::c1) * parameters::symmetrical::r
             + parameters::symmetrical::Lambda * parameters::symmetrical::A3 * W_control_3
-            / (3 * parameters::symmetrical::rho * parameters::c1);
+            / (3 * parameters::symmetrical::rho * parameters::c1) * parameters::symmetrical::r;
 }
 
 Vector<3> W_control(Vector<3> u_control)
 {
-    return {parameters::c1 * (u_control[0] - 2 * u_control[1] + u_control[2]) / (2 * parameters::symmetrical::A1),
-            parameters::c1 * sqrt(3) * (u_control[0] - u_control[2]) / (2 * parameters::symmetrical::A2),
+    return {parameters::c1 * (u_control[0] - 2 * u_control[1] + u_control[2]) / (2 * parameters::symmetrical::A1) / parameters::symmetrical::r,
+            parameters::c1 * sqrt(3) * (u_control[0] - u_control[2]) / (2 * parameters::symmetrical::A2) / parameters::symmetrical::r,
             parameters::c1 * parameters::symmetrical::rho * (u_control[0] + u_control[1] + u_control[2])
-                / (parameters::symmetrical::Lambda * parameters::symmetrical::A3)};
+                / (parameters::symmetrical::Lambda * parameters::symmetrical::A3) / parameters::symmetrical::r};
 }

@@ -17,13 +17,13 @@ Vector<6> rightpart(double t, Vector<6> x, Vector<3> control_minus, Vector<3> co
         u = control_plus;
 
 
-    rez[0] = (x[1] * x[2] / parameters::symmetrical::Lambda + parameters::c1 * (u[0] / 2 - u[1] + u[2] / 2)
-            - 3 * parameters::c2 * x[0] / 2) / parameters::symmetrical::A1;
-    rez[1] = (- x[0] * x[2] / parameters::symmetrical::Lambda + parameters::c1 * sqrt(3) * (u[0]  - u[2]) / 2
-            - 3 * parameters::c2 * x[1] / 2) / parameters::symmetrical::A2;
-    rez[2] = (parameters::c1 * parameters::symmetrical::rho * (u[0] + u[1] + u[2]) / parameters::symmetrical::Lambda
+    rez[0] = (parameters::symmetrical::m * x[1] * x[2] / parameters::symmetrical::Lambda + parameters::c1 * (u[0] / 2 - u[1] + u[2] / 2) / parameters::symmetrical::r
+            - 3 * parameters::c2 * x[0] / 2 / parameters::symmetrical::r / parameters::symmetrical::r) / parameters::symmetrical::A1;
+    rez[1] = (- parameters::symmetrical::m * x[0] * x[2] / parameters::symmetrical::Lambda + parameters::c1 * sqrt(3) * (u[0]  - u[2]) / 2 / parameters::symmetrical::r
+            - 3 * parameters::c2 * x[1] / 2 / parameters::symmetrical::r / parameters::symmetrical::r) / parameters::symmetrical::A2;
+    rez[2] = (parameters::c1 * parameters::symmetrical::rho * (u[0] + u[1] + u[2]) / parameters::symmetrical::Lambda / parameters::symmetrical::r
             - 3 * parameters::c2 * parameters::symmetrical::rho * parameters::symmetrical::rho * x[2]
-            / (parameters::symmetrical::Lambda * parameters::symmetrical::Lambda)) / parameters::symmetrical::A3;
+            / (parameters::symmetrical::Lambda * parameters::symmetrical::Lambda) / parameters::symmetrical::r / parameters::symmetrical::r) / parameters::symmetrical::A3;
     rez[3] = x[0] * cos(x[5]) - x[1] * sin(x[5]);
     rez[4] = x[0] * sin(x[5]) + x[1] * cos(x[5]);
     rez[5] = x[2] / parameters::symmetrical::Lambda;
