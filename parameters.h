@@ -15,24 +15,26 @@ namespace precision
 
 namespace parameters
 {
-    const double lambda  = 1.0 / 3;
+    const double lambda  = sqrt(5e-4);
 
     const double c1      = 1e-2;
     const double c2      = 2.5e-4;
 
     namespace symmetrical
     {
-        const double Lambda  = 5.0 / 4;
+        const double Lambda = sqrt(5e-2);
 
-        const double rho     = 3.0 / 2;
+        const double m = 3.0;
+        const double rho     = 0.1;
+        const double r       = 0.05;
 
-        const double A1      = 1 + 3 * lambda * lambda / 2;
-        const double A2      = 1 + 3 * lambda * lambda / 2;
-        const double A3      = 1 + 3 * rho * rho * lambda * lambda / (Lambda * Lambda);
-        const double L       = 1 / (Lambda * A1); //L1 = L2 == L
+        const double A1      = m + 3 * lambda * lambda / 2 / r / r;
+        const double A2      = m + 3 * lambda * lambda / 2 / r / r;
+        const double A3      = 1 + 3 * rho * rho * lambda * lambda / (Lambda * Lambda * r * r);
+        const double L       = m / (Lambda * A1); //L1 = L2 == L
 
-        const double kappa   = 3 * c2 / (2 * A1); //kappa1 == kappa2 == kappa
-        const double kappa3  = 3 * c2 * rho * rho / (Lambda * Lambda * A3);
+        const double kappa   = 3 * c2 / (2 * A1 * r * r); //kappa1 == kappa2 == kappa
+        const double kappa3  = 3 * c2 * rho * rho / (Lambda * Lambda * A3 * r * r);
 
         const std::array<double, 3> alpha = {- M_PI / 6, M_PI / 2, 7 * M_PI / 6};
         const std::array<double, 3> beta = alpha;
