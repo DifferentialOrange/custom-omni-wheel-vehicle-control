@@ -8,7 +8,7 @@ double theta(double t, double D3, double W3, double D6)
 
 double beta(double t1, double t, double D3, double W3, double D6)
 {
-    return (theta(t, D3, W3, D6) - theta(t1, D3, W3, D6)) / parameters::symmetrical::A1;
+    return parameters::symmetrical::L * parameters::symmetrical::Lambda * (theta(t, D3, W3, D6) - theta(t1, D3, W3, D6));
 }
 
 double under_gamma_W_c(double t1, double tau, double D3, double W3, double D6)
