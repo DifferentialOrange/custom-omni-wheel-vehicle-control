@@ -121,9 +121,9 @@ void MainWindow::on_pushButton_compute_clicked()
 
 //    control = custom_control_find(control, t_sw, T, initial_values, final_values);
 
-    DOPRI8_final_plot (0, T, initial_values, {control[0], control[1], control[2]},
-                        {control[3], control[4], control[5]},
-                        t_sw, t, nu_1, nu_2, nu_3, x, y, theta);
+//    DOPRI8_final_plot (0, T, initial_values, {control[0], control[1], control[2]},
+//                        {control[3], control[4], control[5]},
+//                        t_sw, t, nu_1, nu_2, nu_3, x, y, theta);
 
     if (plotted)
     {
@@ -142,8 +142,8 @@ void MainWindow::on_pushButton_compute_clicked()
 
     trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
     trajectory_plus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    trajectory_minus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    trajectory_plus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
+//    trajectory_minus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
+//    trajectory_plus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
 
     QVector<QCPCurveData> data_minus, data_plus, data_minus_symm, data_plus_symm;
 
@@ -154,10 +154,10 @@ void MainWindow::on_pushButton_compute_clicked()
     trajectory_minus_symm->setPen(pen_minus_symm);
     trajectory_plus_symm->setPen(pen_plus_symm);
 
-    QPen pen_minus(Qt::blue);
-    QPen pen_plus(Qt::magenta);
-    trajectory_minus->setPen(pen_minus);
-    trajectory_plus->setPen(pen_plus);
+//    QPen pen_minus(Qt::blue);
+//    QPen pen_plus(Qt::magenta);
+//    trajectory_minus->setPen(pen_minus);
+//    trajectory_plus->setPen(pen_plus);
 
     int i = 0;
     for (i = 0; t_symm[i] < t_sw; i++)
@@ -169,29 +169,29 @@ void MainWindow::on_pushButton_compute_clicked()
     trajectory_minus_symm->data()->set(data_minus_symm, true);
     trajectory_plus_symm->data()->set(data_plus_symm, true);
 
-    for (i = 0; t[i] < t_sw; i++)
-        data_minus.append(QCPCurveData(i, x[i], y[i]));
+//    for (i = 0; t[i] < t_sw; i++)
+//        data_minus.append(QCPCurveData(i, x[i], y[i]));
 
-    for (; i < x.length(); i++)
-        data_plus.append(QCPCurveData(i, x[i], y[i]));
+//    for (; i < x.length(); i++)
+//        data_plus.append(QCPCurveData(i, x[i], y[i]));
 
-    trajectory_minus->data()->set(data_minus, true);
-    trajectory_plus->data()->set(data_plus, true);
+//    trajectory_minus->data()->set(data_minus, true);
+//    trajectory_plus->data()->set(data_plus, true);
 
     double x_max_1 = *std::max_element(x_symm.begin(), x_symm.end());
     double x_min_1 = *std::min_element(x_symm.begin(), x_symm.end());
     double y_max_1 = *std::max_element(y_symm.begin(), y_symm.end());
     double y_min_1 = *std::min_element(y_symm.begin(), y_symm.end());
 
-    double x_max_2 = *std::max_element(x.begin(), x.end());
-    double x_min_2 = *std::min_element(x.begin(), x.end());
-    double y_max_2 = *std::max_element(y.begin(), y.end());
-    double y_min_2 = *std::min_element(y.begin(), y.end());
+//    double x_max_2 = *std::max_element(x.begin(), x.end());
+//    double x_min_2 = *std::min_element(x.begin(), x.end());
+//    double y_max_2 = *std::max_element(y.begin(), y.end());
+//    double y_min_2 = *std::min_element(y.begin(), y.end());
 
-    double x_max = std::max(x_max_1, x_max_2);
-    double x_min = std::min(x_min_1, x_min_2);
-    double y_max = std::max(y_max_1, y_max_2);
-    double y_min = std::min(y_min_1, y_min_2);
+    double x_max = std::max(x_max_1, x_max_1);
+    double x_min = std::min(x_min_1, x_min_1);
+    double y_max = std::max(y_max_1, y_max_1);
+    double y_min = std::min(y_min_1, y_min_1);
 
     ui->PlotWidget_trajectory->xAxis->setRange(x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.05);
     ui->PlotWidget_trajectory->yAxis->setRange(y_min - (y_max - y_min) * 0.05, y_max + (y_max - y_min) * 0.05);
