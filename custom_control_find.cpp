@@ -15,9 +15,11 @@ Vector<6> custom_control_find(Vector<6> control, double t_sw, double T, Vector<6
     double angle_step = precision::angle_step;
     double N_step = precision::N_step;
 
-    for (unsigned i = 0; i < 3; ++i)
+    for (unsigned i = 0; i < 3; ++i) {
+        qDebug() << "alpha" << i + 1 << " STARTING\n";
         while(fabs(parameters::final::alpha[i] - alpha[i]) > precision::double_EPS)
         {
+            qDebug() << "alpha" << i + 1 << " COMPUTING to " << parameters::final::alpha[i] << "\n";
             auto pot_alpha = alpha;
             auto pot_beta = beta;
             auto pot_delta = delta;
@@ -72,11 +74,14 @@ Vector<6> custom_control_find(Vector<6> control, double t_sw, double T, Vector<6
                 angle_step /= 2.0;
             }
         }
+    }
 
 
-    for (unsigned i = 0; i < 3; ++i)
+    for (unsigned i = 0; i < 3; ++i) {
+        qDebug() << "beta" << i + 1 << " STARTING\n";
         while(fabs(parameters::final::beta[i] - beta[i]) > precision::double_EPS)
         {
+            qDebug() << "beta" << i + 1 << " COMPUTING to " << parameters::final::beta[i] << "\n";
             auto pot_alpha = alpha;
             auto pot_beta = beta;
             auto pot_delta = delta;
@@ -127,10 +132,13 @@ Vector<6> custom_control_find(Vector<6> control, double t_sw, double T, Vector<6
                 angle_step /= 2.0;
             }
         }
+    }
 
-    for (unsigned i = 0; i < 3; ++i)
+    for (unsigned i = 0; i < 3; ++i) {
+        qDebug() << "delta" << i + 1 << " STARTING\n";
         while(fabs(parameters::final::delta[i] - delta[i]) > precision::double_EPS)
         {
+            qDebug() << "delta" << i + 1 << " COMPUTING to " << parameters::final::delta[i] << "\n";
             auto pot_alpha = alpha;
             auto pot_beta = beta;
             auto pot_delta = delta;
@@ -155,7 +163,7 @@ Vector<6> custom_control_find(Vector<6> control, double t_sw, double T, Vector<6
             }
             else
             {
-                auto step = std::min(angle_step,
+                auto step = std::min(N_step,
                                      fabs(parameters::final::delta[i] - pot_delta[i]));
                 pot_delta[i] += step;
 
@@ -191,9 +199,12 @@ Vector<6> custom_control_find(Vector<6> control, double t_sw, double T, Vector<6
                 qDebug() << "N_step " << N_step << "\n";
             }
         }
+    }
 
+    qDebug() << "Delta STARTING\n";
     while(fabs(parameters::final::Delta - Delta) > precision::double_EPS)
     {
+        qDebug() << "Delta COMPUTING to " << parameters::final::Delta << "\n";
         auto pot_alpha = alpha;
         auto pot_beta = beta;
         auto pot_delta = delta;
@@ -233,8 +244,10 @@ Vector<6> custom_control_find(Vector<6> control, double t_sw, double T, Vector<6
         qDebug() << "Delta " << Delta << " OK\n";
     }
 
+    qDebug() << "Lambda STARTING\n";
     while(fabs(parameters::final::Lambda - Lambda) > precision::double_EPS)
     {
+        qDebug() << "Lambda COMPUTING to " << parameters::final::Lambda << "\n";
         auto pot_alpha = alpha;
         auto pot_beta = beta;
         auto pot_delta = delta;

@@ -41,6 +41,13 @@ std::array<double, 9> matr_T (std::array<double, 9> A)
             A[2], A[5], A[8]};
 }
 
+std::array<double, 9> matr_diag (double diag_0, double diag_1, double diag_2)
+{
+    return {diag_0, 0, 0,
+            0, diag_1, 0,
+            0, 0, diag_2};
+}
+
 double matr_det (std::array<double, 9> A)
 {
     return A[0] * A[4] * A[8] + A[2] * A[3] * A[7] + A[1] * A[5] * A[6] -
@@ -58,17 +65,19 @@ std::array<double, 9> matr_rev (std::array<double, 9> A)
 std::array<double, 9> Sigma_matr (std::array<double, 3> alpha, std::array<double, 3> beta,
                                   std::array<double, 3> delta, double Delta, double Lambda)
 {
-    return {-sin(beta[0]), cos(beta[0]), -Delta * sin(beta[0]) / Lambda
-                                    + delta[0] * cos(beta[0] - alpha[0]) / Lambda,
-            -sin(beta[1]), cos(beta[1]), -Delta * sin(beta[1]) / Lambda
-                                    + delta[1] * cos(beta[1] - alpha[1]) / Lambda,
-            -sin(beta[2]), cos(beta[2]), -Delta * sin(beta[2]) / Lambda
-                                    + delta[2] * cos(beta[2] - alpha[2]) / Lambda};
+    double r = parameters::symmetrical::r;
+    return {-sin(beta[0]) / r, cos(beta[0]) / r, -Delta * sin(beta[0]) / Lambda / r
+                                    + delta[0] * cos(beta[0] - alpha[0]) / Lambda / r,
+            -sin(beta[1]) / r, cos(beta[1]) / r, -Delta * sin(beta[1]) / Lambda
+                                    + delta[1] * cos(beta[1] - alpha[1]) / Lambda / r,
+            -sin(beta[2]) / r, cos(beta[2]) / r, -Delta * sin(beta[2]) / Lambda / r
+                                    + delta[2] * cos(beta[2] - alpha[2]) / Lambda / r};
 }
 
 std::array<double, 9> A_matr (std::array<double, 3> alpha, std::array<double, 3> beta,
                               std::array<double, 3> delta, double Delta, double Lambda)
 {
     auto Sigma = Sigma_matr(alpha, beta, delta, Delta, Lambda);
-    return matr_sum(matr_E, scal_mult(matr_mult(matr_T(Sigma), Sigma), parameters::lambda * parameters::lambda));
+    auto m_math = matr_diag(parameters::symmetrical::m, parameters::symmetrical::m, 1);
+    return matr_sum(m_math, scal_mult(matr_mult(matr_T(Sigma), Sigma), parameters::lambda * parameters::lambda));
 }
