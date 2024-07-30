@@ -10,7 +10,7 @@ namespace precision
     const double hder = 1e-4; //numerical derivative step
 
     const double angle_step = M_PI / 12;
-    const double N_step = 0.1;
+    const double N_step = 0.01;
 }
 
 namespace parameters
@@ -44,11 +44,11 @@ namespace parameters
 
     namespace final
     {
-        const double Lambda = 5.0 / 4;
-        const double Delta = 0.5;
+        const double Lambda = sqrt(7e-2);
+        const double Delta = 0.05;
 
         const std::array<double, 3> alpha = {0, M_PI / 2, M_PI};
         const std::array<double, 3> beta = alpha;
-        const std::array<double, 3> delta = {5.0 / 4, 2.0, 5.0 / 4};
+        const std::array<double, 3> delta = {0.1, 0.15, 0.1};
     }
 }
