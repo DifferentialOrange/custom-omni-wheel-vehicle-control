@@ -15,8 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->lineEdit_nu_1_T->setText("0");
     ui->lineEdit_nu_2_T->setText("0");
     ui->lineEdit_nu_3_T->setText("0");
-    ui->lineEdit_x_T->setText("10");
-    ui->lineEdit_y_T->setText("10");
+    ui->lineEdit_x_T->setText("5");
+    ui->lineEdit_y_T->setText("5");
     ui->lineEdit_theta_T->setText("0");
     ui->lineEdit_t_sw->setText("5");
     ui->lineEdit_T->setText("10");
@@ -27,6 +27,62 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void fillTrajectory(double t_sw, QVector<double> &t, QVector<double> &t_symm,
+                    QVector<double> &x, QVector<double> &x_symm,
+                    QVector<double> &y, QVector<double> &y_symm,
+                    QCustomPlot* window) {
+
+    QCPCurve* trajectory_minus_symm = new QCPCurve(window->xAxis, window->yAxis);
+    QCPCurve* trajectory_plus_symm = new QCPCurve(window->xAxis, window->yAxis);
+    QCPCurve* trajectory_minus = new QCPCurve(window->xAxis, window->yAxis);
+    QCPCurve* trajectory_plus = new QCPCurve(window->xAxis, window->yAxis);
+
+    QVector<QCPCurveData> data_minus, data_plus, data_minus_symm, data_plus_symm;
+
+    QPen pen_minus_symm(Qt::DashLine);
+    pen_minus_symm.setColor(Qt::gray);
+    QPen pen_plus_symm(Qt::DashLine);
+    pen_plus_symm.setColor(Qt::yellow);
+    trajectory_minus_symm->setPen(pen_minus_symm);
+    trajectory_plus_symm->setPen(pen_plus_symm);
+
+    QPen pen_minus(Qt::blue);
+    QPen pen_plus(Qt::magenta);
+    trajectory_minus->setPen(pen_minus);
+    trajectory_plus->setPen(pen_plus);
+
+    int i = 0;
+    for (i = 0; t_symm[i] < t_sw; i++)
+        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+
+    for (; i < x_symm.length(); i++)
+        data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
+
+    trajectory_minus_symm->data()->set(data_minus_symm, true);
+    trajectory_plus_symm->data()->set(data_plus_symm, true);
+
+    for (i = 0; t[i] < t_sw; i++)
+        data_minus.append(QCPCurveData(i, x[i], y[i]));
+
+    for (; i < x.length(); i++)
+        data_plus.append(QCPCurveData(i, x[i], y[i]));
+
+    trajectory_minus->data()->set(data_minus, true);
+    trajectory_plus->data()->set(data_plus, true);
+}
+
+void setRange(QCPAxis *ax, QVector<double> &v_1, QVector<double> &v_2) {
+    double v_max_1 = *std::max_element(v_1.begin(), v_1.end());
+    double v_min_1 = *std::min_element(v_1.begin(), v_1.end());
+
+    double v_max_2 = *std::max_element(v_2.begin(), v_2.end());
+    double v_min_2 = *std::min_element(v_2.begin(), v_2.end());
+
+    double v_max = std::max(v_max_1, v_max_2);
+    double v_min = std::min(v_min_1, v_min_2);
+
+    ax->setRange(v_min - (v_max - v_min) * 0.05, v_max + (v_max - v_min) * 0.05);
+}
 
 void MainWindow::on_pushButton_compute_clicked()
 {
@@ -123,53 +179,7 @@ void MainWindow::on_pushButton_compute_clicked()
         ui->PlotWidget_trajectory->clearPlottables();
     }
 
-
-    ui->textBrowser_controls->setText("U_symm = " + QString::number(u_symm[0], 'g', 6)
-            + " " + QString::number(u_symm[1], 'g', 6) + " " + QString::number(u_symm[2], 'g', 6)
-            + " " + QString::number(u_symm[3], 'g', 6) + " " + QString::number(u_symm[4], 'g', 6)
-            + " " + QString::number(u_symm[5], 'g', 6) + '\n'
-            + "U_final   = " + QString::number(control[0], 'g', 6)
-            + " " + QString::number(control[1], 'g', 6) + " " + QString::number(control[2], 'g', 6)
-            + " " + QString::number(control[3], 'g', 6) + " " + QString::number(control[4], 'g', 6)
-            + " " + QString::number(control[5], 'g', 6));
-
-    trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    trajectory_plus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    trajectory_minus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-    trajectory_plus = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
-
-    QVector<QCPCurveData> data_minus, data_plus, data_minus_symm, data_plus_symm;
-
-    QPen pen_minus_symm(Qt::DashLine);
-    pen_minus_symm.setColor(Qt::gray);
-    QPen pen_plus_symm(Qt::DashLine);
-    pen_plus_symm.setColor(Qt::yellow);
-    trajectory_minus_symm->setPen(pen_minus_symm);
-    trajectory_plus_symm->setPen(pen_plus_symm);
-
-    QPen pen_minus(Qt::blue);
-    QPen pen_plus(Qt::magenta);
-    trajectory_minus->setPen(pen_minus);
-    trajectory_plus->setPen(pen_plus);
-
-    int i = 0;
-    for (i = 0; t_symm[i] < t_sw; i++)
-        data_minus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
-
-    for (; i < x_symm.length(); i++)
-        data_plus_symm.append(QCPCurveData(i, x_symm[i], y_symm[i]));
-
-    trajectory_minus_symm->data()->set(data_minus_symm, true);
-    trajectory_plus_symm->data()->set(data_plus_symm, true);
-
-    for (i = 0; t[i] < t_sw; i++)
-        data_minus.append(QCPCurveData(i, x[i], y[i]));
-
-    for (; i < x.length(); i++)
-        data_plus.append(QCPCurveData(i, x[i], y[i]));
-
-    trajectory_minus->data()->set(data_minus, true);
-    trajectory_plus->data()->set(data_plus, true);
+    fillTrajectory(t_sw, t, t_symm, x, x_symm, y, y_symm, ui->PlotWidget_trajectory)
 
     double x_max_1 = *std::max_element(x_symm.begin(), x_symm.end());
     double x_min_1 = *std::min_element(x_symm.begin(), x_symm.end());
