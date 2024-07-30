@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>863</width>
-    <height>474</height>
+    <width>1433</width>
+    <height>1371</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -336,13 +336,73 @@
      <string>Generate</string>
     </property>
    </widget>
-   <widget class="QTextBrowser" name="textBrowser_controls">
+   <widget class="QCustomPlot" name="PlotWidget_nu_3" native="true">
+    <property name="geometry">
+     <rect>
+      <x>890</x>
+      <y>350</y>
+      <width>431</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="PlotWidget_nu_1" native="true">
     <property name="geometry">
      <rect>
       <x>10</x>
       <y>350</y>
-      <width>541</width>
-      <height>51</height>
+      <width>431</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="PlotWidget_nu_2" native="true">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>350</y>
+      <width>431</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="PlotWidget_u_1" native="true">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>690</y>
+      <width>431</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="PlotWidget_u_2" native="true">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>690</y>
+      <width>431</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="PlotWidget_u_3" native="true">
+    <property name="geometry">
+     <rect>
+      <x>890</x>
+      <y>690</y>
+      <width>431</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="PlotWidget_theta" native="true">
+    <property name="geometry">
+     <rect>
+      <x>890</x>
+      <y>10</y>
+      <width>431</width>
+      <height>331</height>
      </rect>
     </property>
    </widget>
@@ -352,7 +412,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>863</width>
+     <width>1433</width>
      <height>22</height>
     </rect>
    </property>
