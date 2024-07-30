@@ -29,8 +29,8 @@ Vector<6> rightpart_custom(double t, Vector<6> x, Vector<3> control_minus, Vecto
     auto second_matr = scal_mult(matr_mult(A_rev, matr_T(Sigma)), parameters::c1);
     auto third_matr = scal_mult(matr_mult(A_rev, matr_mult(matr_T(Sigma), Sigma)), -parameters::c2);
 
-    auto rightpart_expr = vec_mult(A_rev, {x[1] * x[2] / Lambda,
-                                           - x[0] * x[2] / Lambda, 0}) +
+    auto rightpart_expr = vec_mult(A_rev, {parameters::symmetrical:: m * x[1] * x[2] / Lambda,
+                                           - parameters::symmetrical:: m * x[0] * x[2] / Lambda, 0}) +
                             vec_mult(second_matr, u) + vec_mult(third_matr, {x[0], x[1], x[2]});
 
     rez[0] = rightpart_expr[0];
