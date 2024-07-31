@@ -34,6 +34,9 @@ private:
     QVector<double> x_symm;
     QVector<double> y_symm;
     QVector<double> theta_symm;
+    QVector<double> u_1_symm;
+    QVector<double> u_2_symm;
+    QVector<double> u_3_symm;
 
     QVector<double> t;
     QVector<double> nu_1;
@@ -42,6 +45,9 @@ private:
     QVector<double> x;
     QVector<double> y;
     QVector<double> theta;
+    QVector<double> u_1;
+    QVector<double> u_2;
+    QVector<double> u_3;
 
     Vector<6> initial_values, final_values;
     double t_sw, T;

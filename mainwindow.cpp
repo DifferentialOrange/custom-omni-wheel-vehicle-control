@@ -69,9 +69,63 @@ void fillTrajectory(double t_sw, QVector<double> &t, QVector<double> &t_symm,
 
     trajectory_minus->data()->set(data_minus, true);
     trajectory_plus->data()->set(data_plus, true);
+
+    trajectory_minus->setName("e^2");
+    trajectory_plus->setName("e^2");
 }
 
-void setRange(QCPAxis *ax, QVector<double> &v_1, QVector<double> &v_2) {
+void fillGraph(double t_sw, QVector<double> &t, QVector<double> &t_symm,
+                    QVector<double> &v, QVector<double> &v_symm,
+                    QCustomPlot* window) {
+    QCPCurve* v_minus_symm = new QCPCurve(window->xAxis, window->yAxis);
+    QCPCurve* v_plus_symm = new QCPCurve(window->xAxis, window->yAxis);
+    QCPCurve* v_minus = new QCPCurve(window->xAxis, window->yAxis);
+    QCPCurve* v_plus = new QCPCurve(window->xAxis, window->yAxis);
+
+    QVector<QCPCurveData> data_minus, data_plus, data_minus_symm, data_plus_symm;
+
+    QPen pen_minus_symm(Qt::DashLine);
+    pen_minus_symm.setColor(Qt::gray);
+    QPen pen_plus_symm(Qt::DashLine);
+    pen_plus_symm.setColor(Qt::yellow);
+    v_minus_symm->setPen(pen_minus_symm);
+    v_plus_symm->setPen(pen_plus_symm);
+
+    QPen pen_minus(Qt::blue);
+    QPen pen_plus(Qt::magenta);
+    v_minus->setPen(pen_minus);
+    v_plus->setPen(pen_plus);
+
+    int i = 0;
+    for (i = 0; t_symm[i] < t_sw; i++)
+        data_minus_symm.append(QCPCurveData(i, t_symm[i], v_symm[i]));
+
+    // To plot voltages without gap.
+    data_plus_symm.append(QCPCurveData(i, t_symm[i - 1], v_symm[i - 1]));
+
+    for (; i < t_symm.length(); i++)
+        data_plus_symm.append(QCPCurveData(i, t_symm[i], v_symm[i]));
+
+    v_minus_symm->data()->set(data_minus_symm, true);
+    v_plus_symm->data()->set(data_plus_symm, true);
+
+    for (i = 0; t[i] < t_sw; i++)
+        data_minus.append(QCPCurveData(i, t[i], v[i]));
+
+    // To plot voltages without gap.
+    data_plus.append(QCPCurveData(i, t[i - 1], v[i - 1]));
+
+    for (; i < t.length(); i++)
+        data_plus.append(QCPCurveData(i, t[i], v[i]));
+
+    v_minus->data()->set(data_minus, true);
+    v_plus->data()->set(data_plus, true);
+
+    v_minus->setName("e^2");
+    v_plus->setName("e^2");
+}
+
+void setRange(QCPAxis *ax, QVector<double> &v_1, QVector<double> &v_2, double margin) {
     double v_max_1 = *std::max_element(v_1.begin(), v_1.end());
     double v_min_1 = *std::min_element(v_1.begin(), v_1.end());
 
@@ -81,7 +135,35 @@ void setRange(QCPAxis *ax, QVector<double> &v_1, QVector<double> &v_2) {
     double v_max = std::max(v_max_1, v_max_2);
     double v_min = std::min(v_min_1, v_min_2);
 
-    ax->setRange(v_min - (v_max - v_min) * 0.05, v_max + (v_max - v_min) * 0.05);
+    ax->setRange(v_min - (v_max - v_min) * margin, v_max + (v_max - v_min) * margin);
+}
+
+void doGraph(double t_sw, QVector<double> &t, QVector<double> &t_symm,
+             QVector<double> &v, QVector<double> &v_symm,
+             QCustomPlot* window, QString filename,
+             double T, Vector<6> initial_values, Vector<6> final_values) {
+    fillGraph(t_sw, t, t_symm, v, v_symm, window);
+    setRange(window->xAxis, t_symm, t, 0);
+    setRange(window->yAxis, v_symm, v, 0.05);
+
+    window->xAxis->setLabel("t");
+    window->yAxis->setLabel(filename);
+
+    window->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    window->replot();
+
+    window->savePdf("../custom-omni-wheel-vehicle-control/PICS/" + filename + "_t_sw_"
+                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
+                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
+                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
+                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
+                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
+                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
+                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
+                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
+                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
+                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
+                                + ".pdf");
 }
 
 void MainWindow::on_pushButton_compute_clicked()
@@ -147,6 +229,9 @@ void MainWindow::on_pushButton_compute_clicked()
         x_symm.clear();
         y_symm.clear();
         theta_symm.clear();
+        u_1_symm.clear();
+        u_2_symm.clear();
+        u_3_symm.clear();
 
         t.clear();
         nu_1.clear();
@@ -155,6 +240,9 @@ void MainWindow::on_pushButton_compute_clicked()
         x.clear();
         y.clear();
         theta.clear();
+        u_1.clear();
+        u_2.clear();
+        u_3.clear();
     }
 
     Vector<6> control = predict_control(t_sw, T, initial_values[0], final_values[0],
@@ -166,38 +254,31 @@ void MainWindow::on_pushButton_compute_clicked()
     DOPRI8_symmetrical_plot (0, T, initial_values, {control[0], control[1], control[2]},
                              {control[3], control[4], control[5]}, t_sw,
                              t_symm, nu_1_symm, nu_2_symm, nu_3_symm,
-                             x_symm, y_symm, theta_symm);
+                             x_symm, y_symm, theta_symm,
+                             u_1_symm, u_2_symm, u_3_symm);
 
     control = custom_control_find(control, t_sw, T, initial_values, final_values);
 
     DOPRI8_final_plot (0, T, initial_values, {control[0], control[1], control[2]},
                         {control[3], control[4], control[5]},
-                        t_sw, t, nu_1, nu_2, nu_3, x, y, theta);
+                        t_sw, t, nu_1, nu_2, nu_3, x, y, theta, u_1, u_2, u_3);
 
     if (plotted)
     {
         ui->PlotWidget_trajectory->clearPlottables();
+        ui->PlotWidget_theta->clearPlottables();
+        ui->PlotWidget_nu_1->clearPlottables();
+        ui->PlotWidget_nu_2->clearPlottables();
+        ui->PlotWidget_nu_3->clearPlottables();
+        ui->PlotWidget_u_1->clearPlottables();
+        ui->PlotWidget_u_2->clearPlottables();
+        ui->PlotWidget_u_3->clearPlottables();
     }
 
-    fillTrajectory(t_sw, t, t_symm, x, x_symm, y, y_symm, ui->PlotWidget_trajectory)
+    fillTrajectory(t_sw, t, t_symm, x, x_symm, y, y_symm, ui->PlotWidget_trajectory);
+    setRange(ui->PlotWidget_trajectory->xAxis, x_symm, x, 0.05);
+    setRange(ui->PlotWidget_trajectory->yAxis, y_symm, y, 0.05);
 
-    double x_max_1 = *std::max_element(x_symm.begin(), x_symm.end());
-    double x_min_1 = *std::min_element(x_symm.begin(), x_symm.end());
-    double y_max_1 = *std::max_element(y_symm.begin(), y_symm.end());
-    double y_min_1 = *std::min_element(y_symm.begin(), y_symm.end());
-
-    double x_max_2 = *std::max_element(x.begin(), x.end());
-    double x_min_2 = *std::min_element(x.begin(), x.end());
-    double y_max_2 = *std::max_element(y.begin(), y.end());
-    double y_min_2 = *std::min_element(y.begin(), y.end());
-
-    double x_max = std::max(x_max_1, x_max_2);
-    double x_min = std::min(x_min_1, x_min_2);
-    double y_max = std::max(y_max_1, y_max_2);
-    double y_min = std::min(y_min_1, y_min_2);
-
-    ui->PlotWidget_trajectory->xAxis->setRange(x_min - (x_max - x_min) * 0.05, x_max + (x_max - x_min) * 0.05);
-    ui->PlotWidget_trajectory->yAxis->setRange(y_min - (y_max - y_min) * 0.05, y_max + (y_max - y_min) * 0.05);
     ui->PlotWidget_trajectory->xAxis->setLabel("x");
     ui->PlotWidget_trajectory->yAxis->setLabel("y");
 
@@ -216,6 +297,37 @@ void MainWindow::on_pushButton_compute_clicked()
                                 + "_y_T_" + QString::number(final_values[4], 'g', 4)
                                 + "_theta_T_" + QString::number(final_values[5], 'g', 4)
                                 + ".pdf");
+
+    fillGraph(t_sw, t, t_symm, theta, theta_symm, ui->PlotWidget_theta);
+    setRange(ui->PlotWidget_theta->xAxis, t_symm, t, 0);
+    setRange(ui->PlotWidget_theta->yAxis, theta_symm, theta, 0.05);
+
+    ui->PlotWidget_theta->xAxis->setLabel("t");
+    ui->PlotWidget_theta->yAxis->setLabel("th");
+
+    ui->PlotWidget_theta->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_theta->replot();
+
+    ui->PlotWidget_theta->savePdf("../custom-omni-wheel-vehicle-control/PICS/theta_t_sw_"
+                                + QString::number(t_sw, 'g', 4) + "_T_" + QString::number(T, 'g', 4)
+                                + "_nu_1_0_" + QString::number(initial_values[0], 'g', 4)
+                                + "_nu_2_0_" + QString::number(initial_values[1], 'g', 4)
+                                + "_nu_3_0_" + QString::number(initial_values[2], 'g', 4)
+                                + "_nu_1_T_" + QString::number(final_values[0], 'g', 4)
+                                + "_nu_2_T_" + QString::number(final_values[1], 'g', 4)
+                                + "_nu_3_T_" + QString::number(final_values[2], 'g', 4)
+                                + "_x_T_" + QString::number(final_values[3], 'g', 4)
+                                + "_y_T_" + QString::number(final_values[4], 'g', 4)
+                                + "_theta_T_" + QString::number(final_values[5], 'g', 4)
+                                + ".pdf");
+
+    doGraph(t_sw, t, t_symm, theta, theta_symm, ui->PlotWidget_theta, "theta", T, initial_values, final_values);
+    doGraph(t_sw, t, t_symm, nu_1, nu_1_symm, ui->PlotWidget_nu_1, "nu_1", T, initial_values, final_values);
+    doGraph(t_sw, t, t_symm, nu_2, nu_2_symm, ui->PlotWidget_nu_2, "nu_2", T, initial_values, final_values);
+    doGraph(t_sw, t, t_symm, nu_3, nu_3_symm, ui->PlotWidget_nu_3, "nu_3", T, initial_values, final_values);
+    doGraph(t_sw, t, t_symm, u_1, u_1_symm, ui->PlotWidget_u_1, "u_1", T, initial_values, final_values);
+    doGraph(t_sw, t, t_symm, u_2, u_2_symm, ui->PlotWidget_u_2, "u_2", T, initial_values, final_values);
+    doGraph(t_sw, t, t_symm, u_3, u_3_symm, ui->PlotWidget_u_3, "u_3", T, initial_values, final_values);
 
     plotted = true;
 }

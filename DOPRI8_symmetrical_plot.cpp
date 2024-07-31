@@ -35,7 +35,8 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                     Vector<3> control_minus, Vector<3> control_plus, double t_sw,
                     QVector<double> &t_vec, QVector<double> &nu1_vec, QVector<double> &nu2_vec,
                     QVector<double> &nu3_vec, QVector<double> &x_vec, QVector<double> &y_vec,
-                    QVector<double> &theta_vec)
+                    QVector<double> &theta_vec, QVector<double> &u1_vec, QVector<double> &u2_vec,
+                    QVector<double> &u3_vec)
 {
     double h = (t_right - t_left) / 1e7;
     double h_new;
@@ -60,6 +61,16 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
     x_vec.append(xl[3]);
     y_vec.append(xl[4]);
     theta_vec.append(xl[5]);
+
+    Vector<3> u;
+    if (tl < t_sw)
+        u = control_minus;
+    else
+        u = control_plus;
+
+    u1_vec.append(u[0]);
+    u2_vec.append(u[1]);
+    u3_vec.append(u[2]);
 
 
     while (tl + h < t_right || last_flag)
@@ -134,6 +145,15 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
             y_vec.append(xl[4]);
             theta_vec.append(xl[5]);
 
+            if (tl < t_sw)
+                u = control_minus;
+            else
+                u = control_plus;
+
+            u1_vec.append(u[0]);
+            u2_vec.append(u[1]);
+            u3_vec.append(u[2]);
+
             coefmax = 5;
 
             h *= 2; 
@@ -162,6 +182,15 @@ Vector<6> DOPRI8_symmetrical_plot(double t_left, double t_right, Vector<6> initi
                 x_vec.append(xl[3]);
                 y_vec.append(xl[4]);
                 theta_vec.append(xl[5]);
+
+                if (tl < t_sw)
+                    u = control_minus;
+                else
+                    u = control_plus;
+
+                u1_vec.append(u[0]);
+                u2_vec.append(u[1]);
+                u3_vec.append(u[2]);
 
                 coefmax = 5;
             }
