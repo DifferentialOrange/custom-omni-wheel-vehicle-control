@@ -307,7 +307,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>16</string>
+     <string>8.4</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_compute">
@@ -366,7 +366,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QCustomPlot" name="PlotWidget_nu" native="true">
+   <widget class="QCustomPlot" name="PlotWidget_nu_12" native="true">
     <property name="geometry">
      <rect>
       <x>10</x>
@@ -379,8 +379,8 @@
    <widget class="QCustomPlot" name="PlotWidget_U" native="true">
     <property name="geometry">
      <rect>
-      <x>1330</x>
-      <y>410</y>
+      <x>890</x>
+      <y>750</y>
       <width>431</width>
       <height>331</height>
      </rect>
@@ -391,6 +391,26 @@
      <rect>
       <x>450</x>
       <y>410</y>
+      <width>431</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="PlotWidget_nu_3" native="true">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>750</y>
+      <width>431</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QCustomPlot" name="PlotWidget_theta" native="true">
+    <property name="geometry">
+     <rect>
+      <x>850</x>
+      <y>30</y>
       <width>431</width>
       <height>331</height>
      </rect>

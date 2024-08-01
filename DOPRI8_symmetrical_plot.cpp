@@ -105,7 +105,7 @@ Vector<6> get_dangerous(double t) {
     double c_1 = parameters2::c_1;
     double c_2 = parameters2::c_2;
 
-    double dnu_3 = 0.03;
+    double dnu_3 = 0.04;
     double nu_3 = dnu_3 * t;
 
     double k = sqrt(2.0) * l * l * L / 2.0 * sqrt(L * L * R * R + 3 * l * l * rho * rho) / sqrt(2 * m * R * R + 3 * l * l);

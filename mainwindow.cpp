@@ -124,11 +124,13 @@ void MainWindow::on_pushButton_compute_clicked()
     if (plotted)
     {
         ui->PlotWidget_trajectory->clearPlottables();
+        ui->PlotWidget_theta->clearPlottables();
         ui->PlotWidget_P->clearPlottables();
         ui->PlotWidget_PT->clearPlottables();
         ui->PlotWidget_N->clearPlottables();
         ui->PlotWidget_U->clearPlottables();
-        ui->PlotWidget_nu->clearPlottables();
+        ui->PlotWidget_nu_12->clearPlottables();
+        ui->PlotWidget_nu_3->clearPlottables();
     }
 
     trajectory_minus_symm = new QCPCurve(ui->PlotWidget_trajectory->xAxis, ui->PlotWidget_trajectory->yAxis);
@@ -136,8 +138,8 @@ void MainWindow::on_pushButton_compute_clicked()
 
     QVector<QCPCurveData> data_minus_symm, data_plus_symm;
 
-    QPen pen_minus_symm(Qt::gray);
-    QPen pen_plus_symm(Qt::gray);
+    QPen pen_minus_symm(Qt::magenta);
+    QPen pen_plus_symm(Qt::magenta);
     trajectory_minus_symm->setPen(pen_minus_symm);
     trajectory_plus_symm->setPen(pen_plus_symm);
 
@@ -216,7 +218,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/trajectory_circles.pdf");
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_trajectory_circles.pdf");
 
     double P_max_1 = *std::max_element(P_real.begin(), P_real.end());
     double P_max_2 = *std::max_element(P_advice.begin(), P_advice.end());
@@ -230,12 +232,12 @@ void MainWindow::on_pushButton_compute_clicked()
     pen_advice.setStyle(Qt::DashLine);
     ui->PlotWidget_P->addGraph();
     ui->PlotWidget_P->graph(0)->setData(t_symm, P_advice);
-    ui->PlotWidget_P->graph(0)->setName("advice");
+    ui->PlotWidget_P->graph(0)->setName("рек");
     ui->PlotWidget_P->graph(0)->setPen(pen_advice);
 
     ui->PlotWidget_P->addGraph();
     ui->PlotWidget_P->graph(1)->setData(t_symm, P_real);
-    ui->PlotWidget_P->graph(1)->setName("real");
+    ui->PlotWidget_P->graph(1)->setName("акт");
     ui->PlotWidget_P->graph(1)->setPen(QPen(Qt::green));
 
     ui->PlotWidget_P->xAxis->setRange(0, T);
@@ -245,18 +247,18 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_P->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignBottom);
     ui->PlotWidget_P->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_P->replot();
-    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_V_circles.pdf");
+    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_power_V_circles.pdf");
 
     ui->PlotWidget_PT->legend->setVisible(true);
 
     ui->PlotWidget_PT->addGraph();
     ui->PlotWidget_PT->graph(0)->setData(t_symm, PT_advice);
-    ui->PlotWidget_PT->graph(0)->setName("advice");
+    ui->PlotWidget_PT->graph(0)->setName("рек");
     ui->PlotWidget_PT->graph(0)->setPen(pen_advice);
 
     ui->PlotWidget_PT->addGraph();
     ui->PlotWidget_PT->graph(1)->setData(t_symm, P_real);
-    ui->PlotWidget_PT->graph(1)->setName("real");
+    ui->PlotWidget_PT->graph(1)->setName("акт");
     ui->PlotWidget_PT->graph(1)->setPen(QPen(Qt::green));
 
     ui->PlotWidget_PT->xAxis->setRange(0, T);
@@ -266,7 +268,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_PT->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignBottom);
     ui->PlotWidget_PT->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_PT->replot();
-    ui->PlotWidget_PT->savePdf("../custom-omni-wheel-vehicle-control/PICS/power_T_circles.pdf");
+    ui->PlotWidget_PT->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_power_T_circles.pdf");
 
     double N_max_1 = *std::max_element(N_1.begin(), N_1.end());
     double N_max_2 = *std::max_element(N_2.begin(), N_2.end());
@@ -295,13 +297,13 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->graph(2)->setPen(QPen(Qt::cyan));
 
     ui->PlotWidget_N->xAxis->setRange(0, T);
-    ui->PlotWidget_N->yAxis->setRange(N_min - 0.05, N_max + 0.05);
+    ui->PlotWidget_N->yAxis->setRange(N_min - (N_max - N_min) * 0.05, N_max + (N_max - N_min) * 0.05);
     ui->PlotWidget_N->xAxis->setLabel("t");
     ui->PlotWidget_N->yAxis->setLabel("N");
     ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N->replot();
 
-    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/N_circles.pdf");
+    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_N_circles.pdf");
 
     double U_max_1 = *std::max_element(U1.begin(), U1.end());
     double U_max_2 = *std::max_element(U2.begin(), U2.end());
@@ -330,49 +332,78 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_U->graph(2)->setPen(QPen(Qt::cyan));
 
     ui->PlotWidget_U->xAxis->setRange(0, T);
-    ui->PlotWidget_U->yAxis->setRange(U_min - 1, U_max + 1);
+    ui->PlotWidget_U->yAxis->setRange(U_min - (U_max - U_min) * 0.05, U_max + (U_max - U_min) * 0.05);
     ui->PlotWidget_U->xAxis->setLabel("t");
     ui->PlotWidget_U->yAxis->setLabel("U");
     ui->PlotWidget_U->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_U->replot();
 
-    ui->PlotWidget_U->savePdf("../custom-omni-wheel-vehicle-control/PICS/U_circles.pdf");
+    ui->PlotWidget_U->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_U_circles.pdf");
 
     double nu_max_1 = *std::max_element(nu_1_symm.begin(), nu_1_symm.end());
     double nu_max_2 = *std::max_element(nu_2_symm.begin(), nu_2_symm.end());
-    double nu_max_3 = *std::max_element(nu_3_symm.begin(), nu_3_symm.end());
     double nu_min_1 = *std::min_element(nu_1_symm.begin(), nu_1_symm.end());
     double nu_min_2 = *std::min_element(nu_2_symm.begin(), nu_2_symm.end());
+    double nu_max_12 = std::max(nu_max_1, nu_max_2);
+    double nu_min_12 = std::min(nu_min_1, nu_min_2);
+
+
     double nu_min_3 = *std::min_element(nu_3_symm.begin(), nu_3_symm.end());
-    double nu_max = std::max(std::max(nu_max_1, nu_max_2), nu_max_3);
-    double nu_min = std::min(std::min(nu_min_1, nu_min_2), nu_min_3);
+    double nu_max_3 = *std::max_element(nu_3_symm.begin(), nu_3_symm.end());
 
-    ui->PlotWidget_nu->legend->setVisible(true);
+    ui->PlotWidget_nu_12->legend->setVisible(true);
 
-    ui->PlotWidget_nu->addGraph();
-    ui->PlotWidget_nu->graph(0)->setData(t_symm, nu_1_symm);
-    ui->PlotWidget_nu->graph(0)->setName("nu_1");
-    ui->PlotWidget_nu->graph(0)->setPen(QPen(Qt::blue));
+    ui->PlotWidget_nu_12->addGraph();
+    ui->PlotWidget_nu_12->graph(0)->setData(t_symm, nu_1_symm);
+    ui->PlotWidget_nu_12->graph(0)->setName("N_1");
+    ui->PlotWidget_nu_12->graph(0)->setPen(QPen(Qt::blue));
 
-    ui->PlotWidget_nu->addGraph();
-    ui->PlotWidget_nu->graph(1)->setData(t_symm, nu_2_symm);
-    ui->PlotWidget_nu->graph(1)->setName("nu_2");
-    ui->PlotWidget_nu->graph(1)->setPen(QPen(Qt::magenta));
+    ui->PlotWidget_nu_12->addGraph();
+    ui->PlotWidget_nu_12->graph(1)->setData(t_symm, nu_2_symm);
+    ui->PlotWidget_nu_12->graph(1)->setName("N_1");
+    ui->PlotWidget_nu_12->graph(1)->setPen(QPen(Qt::magenta));
 
-    ui->PlotWidget_nu->addGraph();
-    ui->PlotWidget_nu->graph(2)->setData(t_symm, nu_3_symm);
-    ui->PlotWidget_nu->graph(2)->setName("nu_3");
-    ui->PlotWidget_nu->graph(2)->setPen(QPen(Qt::cyan));
+    ui->PlotWidget_nu_12->xAxis->setRange(0, T);
+    ui->PlotWidget_nu_12->yAxis->setRange(nu_min_12 - (nu_max_12 - nu_min_12) * 0.05, nu_max_12 + (nu_max_12 - nu_min_12) * 0.05);
+    ui->PlotWidget_nu_12->xAxis->setLabel("t");
+    ui->PlotWidget_nu_12->yAxis->setLabel("nu");
+    ui->PlotWidget_nu_12->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_nu_12->replot();
 
-    ui->PlotWidget_nu->xAxis->setRange(0, T);
-    ui->PlotWidget_nu->yAxis->setRange(nu_min - 0.05, nu_max + 0.05);
-    ui->PlotWidget_nu->xAxis->setLabel("t");
-    ui->PlotWidget_nu->yAxis->setLabel("nu");
-    ui->PlotWidget_nu->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
-    ui->PlotWidget_nu->replot();
+    ui->PlotWidget_nu_12->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_nu_12_circles.pdf");
 
-    ui->PlotWidget_nu->savePdf("../custom-omni-wheel-vehicle-control/PICS/nu_circles.pdf");
+    ui->PlotWidget_nu_3->legend->setVisible(true);
 
+    ui->PlotWidget_nu_3->addGraph();
+    ui->PlotWidget_nu_3->graph(0)->setData(t_symm, nu_3_symm);
+    ui->PlotWidget_nu_3->graph(0)->setName("N_1");
+    ui->PlotWidget_nu_3->graph(0)->setPen(QPen(Qt::cyan));
+
+    ui->PlotWidget_nu_3->xAxis->setRange(0, T);
+    ui->PlotWidget_nu_3->yAxis->setRange(nu_min_3 - (nu_max_3 - nu_min_3) * 0.05, nu_max_3 + (nu_max_3 - nu_min_3) * 0.05);
+    ui->PlotWidget_nu_3->xAxis->setLabel("t");
+    ui->PlotWidget_nu_3->yAxis->setLabel("nu");
+    ui->PlotWidget_nu_3->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_nu_3->replot();
+
+    ui->PlotWidget_nu_3->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_nu_3_circles.pdf");
+
+    double theta_min = *std::min_element(theta_symm.begin(), theta_symm.end());
+    double theta_max = *std::max_element(theta_symm.begin(), theta_symm.end());
+
+    ui->PlotWidget_theta->addGraph();
+    ui->PlotWidget_theta->graph(0)->setData(t_symm, theta_symm);
+    ui->PlotWidget_theta->graph(0)->setName("theta");
+    ui->PlotWidget_theta->graph(0)->setPen(QPen(Qt::magenta));
+
+    ui->PlotWidget_theta->xAxis->setRange(0, T);
+    ui->PlotWidget_theta->yAxis->setRange(theta_min - (theta_max - theta_min) * 0.05, theta_max + (theta_max - theta_min) * 0.05);
+    ui->PlotWidget_theta->xAxis->setLabel("t");
+    ui->PlotWidget_theta->yAxis->setLabel("theta");
+    ui->PlotWidget_theta->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_theta->replot();
+
+    ui->PlotWidget_theta->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_theta_circles.pdf");
     plotted = true;
 }
 
