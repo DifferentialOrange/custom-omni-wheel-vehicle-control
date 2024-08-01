@@ -77,6 +77,16 @@
      </rect>
     </property>
    </widget>
+   <widget class="QCustomPlot" name="PlotWidget_theta" native="true">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>380</y>
+      <width>431</width>
+      <height>331</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">

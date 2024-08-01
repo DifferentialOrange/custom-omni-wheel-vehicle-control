@@ -246,7 +246,6 @@ void MainWindow::on_pushButton_compute_clicked()
     double chi_2_min_2 = *std::min_element(chi_2_noeps.begin(), chi_2_noeps.end());
     double chi_2_min = std::min(chi_2_min_1, chi_2_min_2);
 
-
     ui->PlotWidget_chi_2->xAxis->setRange(0, T);
     ui->PlotWidget_chi_2->yAxis->setRange(chi_2_min - (chi_2_max - chi_2_min) * 0.05, chi_2_max + (chi_2_max - chi_2_min) * 0.05);
     ui->PlotWidget_chi_2->xAxis->setLabel("t");
@@ -255,6 +254,36 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_chi_2->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_chi_2->replot();
     ui->PlotWidget_chi_2->savePdf("../custom-omni-wheel-vehicle-control/PICS/massive_chi_2.pdf");
+
+
+    ui->PlotWidget_theta->legend->setVisible(true);
+
+    ui->PlotWidget_theta->addGraph();
+    ui->PlotWidget_theta->graph(0)->setData(t_noeps, theta_noeps);
+    ui->PlotWidget_theta->graph(0)->setName("e^2 = 0 kg*r^2");
+    ui->PlotWidget_theta->graph(0)->setPen(pen_noeps);
+
+    ui->PlotWidget_theta->addGraph();
+    ui->PlotWidget_theta->graph(1)->setData(t, theta);
+    ui->PlotWidget_theta->graph(1)->setName("e^2 = 4*10^-5 kg*r");
+    ui->PlotWidget_theta->graph(1)->setPen(pen_eps);
+
+    double theta_max_1 = *std::max_element(theta.begin(), theta.end());
+    double theta_max_2 = *std::max_element(theta_noeps.begin(), theta_noeps.end());
+    double theta_max = std::max(theta_max_1, theta_max_2);
+    double theta_min_1 = *std::min_element(theta.begin(), theta.end());
+    double theta_min_2 = *std::min_element(theta_noeps.begin(), theta_noeps.end());
+    double theta_min = std::min(theta_min_1, theta_min_2);
+
+
+    ui->PlotWidget_theta->xAxis->setRange(0, T);
+    ui->PlotWidget_theta->yAxis->setRange(theta_min - (theta_max - theta_min) * 0.05, theta_max + (theta_max - theta_min) * 0.05);
+    ui->PlotWidget_theta->xAxis->setLabel("t");
+    ui->PlotWidget_theta->yAxis->setLabel("theta");
+    ui->PlotWidget_theta->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignTop);
+    ui->PlotWidget_theta->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->PlotWidget_theta->replot();
+    ui->PlotWidget_theta->savePdf("../custom-omni-wheel-vehicle-control/PICS/massive_theta.pdf");
 
     plotted = true;
 }
