@@ -307,7 +307,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>8.4</string>
+     <string>2.8</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_compute">
