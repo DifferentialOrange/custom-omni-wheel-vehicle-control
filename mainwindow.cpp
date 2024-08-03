@@ -237,7 +237,7 @@ void MainWindow::on_pushButton_compute_clicked()
 
     ui->PlotWidget_P->addGraph();
     ui->PlotWidget_P->graph(1)->setData(t_symm, P_real);
-    ui->PlotWidget_P->graph(1)->setName("акт");
+    ui->PlotWidget_P->graph(1)->setName("факт");
     ui->PlotWidget_P->graph(1)->setPen(QPen(Qt::green));
 
     ui->PlotWidget_P->xAxis->setRange(0, T);
@@ -258,7 +258,7 @@ void MainWindow::on_pushButton_compute_clicked()
 
     ui->PlotWidget_PT->addGraph();
     ui->PlotWidget_PT->graph(1)->setData(t_symm, P_real);
-    ui->PlotWidget_PT->graph(1)->setName("акт");
+    ui->PlotWidget_PT->graph(1)->setName("факт");
     ui->PlotWidget_PT->graph(1)->setPen(QPen(Qt::green));
 
     ui->PlotWidget_PT->xAxis->setRange(0, T);
