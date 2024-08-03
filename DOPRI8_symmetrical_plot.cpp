@@ -174,8 +174,8 @@ Vector<3> compute_U(double t) {
 //    U[2] = 48;
 
 //    auto dang = get_dangerous(t);
-//    return get_desired_control(0, dnu_2, dnu_3, 0, nu_2, nu_3);
-    return {-20, 30, -12};
+    return get_desired_control(0, dnu_2, dnu_3, 0, nu_2, nu_3);
+//    return {-20, 30, -12};
 }
 
 

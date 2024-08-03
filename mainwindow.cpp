@@ -218,7 +218,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_trajectory->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_trajectory->replot();
 
-    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_trajectory_explicit.pdf");
+    ui->PlotWidget_trajectory->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_trajectory_circles.pdf");
 
     double P_max_1 = *std::max_element(P_real.begin(), P_real.end());
     double P_max_2 = *std::max_element(P_advice.begin(), P_advice.end());
@@ -247,7 +247,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_P->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignBottom);
     ui->PlotWidget_P->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_P->replot();
-    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_power_V_explicit.pdf");
+    ui->PlotWidget_P->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_power_V_circles.pdf");
 
     ui->PlotWidget_PT->legend->setVisible(true);
 
@@ -268,7 +268,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_PT->axisRect()->insetLayout()->setInsetAlignment(0, Qt::AlignRight|Qt::AlignBottom);
     ui->PlotWidget_PT->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_PT->replot();
-    ui->PlotWidget_PT->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_power_T_explicit.pdf");
+    ui->PlotWidget_PT->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_power_T_circles.pdf");
 
     double N_max_1 = *std::max_element(N_1.begin(), N_1.end());
     double N_max_2 = *std::max_element(N_2.begin(), N_2.end());
@@ -303,7 +303,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_N->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_N->replot();
 
-    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_N_explicit.pdf");
+    ui->PlotWidget_N->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_N_circles.pdf");
 
     double U_max_1 = *std::max_element(U1.begin(), U1.end());
     double U_max_2 = *std::max_element(U2.begin(), U2.end());
@@ -338,7 +338,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_U->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_U->replot();
 
-    ui->PlotWidget_U->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_U_explicit.pdf");
+    ui->PlotWidget_U->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_U_circles.pdf");
 
     double nu_max_1 = *std::max_element(nu_1_symm.begin(), nu_1_symm.end());
     double nu_max_2 = *std::max_element(nu_2_symm.begin(), nu_2_symm.end());
@@ -370,7 +370,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_nu_12->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_nu_12->replot();
 
-    ui->PlotWidget_nu_12->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_nu_12_explicit.pdf");
+    ui->PlotWidget_nu_12->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_nu_12_circles.pdf");
 
     ui->PlotWidget_nu_3->legend->setVisible(true);
 
@@ -386,7 +386,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_nu_3->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_nu_3->replot();
 
-    ui->PlotWidget_nu_3->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_nu_3_explicit.pdf");
+    ui->PlotWidget_nu_3->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_nu_3_circles.pdf");
 
     double theta_min = *std::min_element(theta_symm.begin(), theta_symm.end());
     double theta_max = *std::max_element(theta_symm.begin(), theta_symm.end());
@@ -403,7 +403,7 @@ void MainWindow::on_pushButton_compute_clicked()
     ui->PlotWidget_theta->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
     ui->PlotWidget_theta->replot();
 
-    ui->PlotWidget_theta->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_theta_explicit.pdf");
+    ui->PlotWidget_theta->savePdf("../custom-omni-wheel-vehicle-control/PICS/reactions_theta_circles.pdf");
     plotted = true;
 }
 
