@@ -42,7 +42,7 @@ void fillTrajectory(double t_sw, QVector<double> &t, QVector<double> &t_symm,
     QPen pen_minus_symm(Qt::DashLine);
     pen_minus_symm.setColor(Qt::gray);
     QPen pen_plus_symm(Qt::DashLine);
-    pen_plus_symm.setColor(Qt::cyan);
+    pen_plus_symm.setColor(Qt::yellow);
     trajectory_minus_symm->setPen(pen_minus_symm);
     trajectory_plus_symm->setPen(pen_plus_symm);
 
@@ -87,7 +87,7 @@ void fillGraph(double t_sw, QVector<double> &t, QVector<double> &t_symm,
     QPen pen_minus_symm(Qt::DashLine);
     pen_minus_symm.setColor(Qt::gray);
     QPen pen_plus_symm(Qt::DashLine);
-    pen_plus_symm.setColor(Qt::cyan);
+    pen_plus_symm.setColor(Qt::yellow);
     v_minus_symm->setPen(pen_minus_symm);
     v_plus_symm->setPen(pen_plus_symm);
 
